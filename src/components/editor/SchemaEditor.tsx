@@ -36,32 +36,37 @@ export function SchemaEditor() {
 
   return (
     <div className="h-full flex flex-col bg-transparent">
-      <div className="flex flex-col gap-4 p-6 border-b border-white/5 bg-white/1">
+      <div className="flex flex-col gap-4 p-8 border-b border-white/5 bg-linear-to-b from-white/2 to-transparent">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
-              Protocol: SQL / AI Optimized
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+              <span className="text-[12px] font-black uppercase tracking-[0.2em] text-white">
+                Data Blueprint
+              </span>
+            </div>
+            <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
+              Schema Engine v1.2
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             <Button
               size="sm"
-              className={`h-9 gap-2 text-[11px] font-bold transition-all rounded-xl px-4 ${
+              className={`h-10 gap-3 text-[11px] font-black uppercase tracking-widest transition-all rounded-xl px-6 border ${
                 isAnalyzing
-                  ? "bg-primary/20 text-primary border border-primary/20"
-                  : "bg-primary text-white hover:bg-primary/90"
+                  ? "bg-primary/20 text-primary border-primary/20"
+                  : "bg-primary text-white hover:bg-primary/90 border-primary/20 shadow-[0_10px_30px_rgba(59,130,246,0.3)] active:scale-95"
               }`}
               onClick={handleAnalyze}
               disabled={isAnalyzing}
             >
               {isAnalyzing ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Cpu className="w-3.5 h-3.5" />
+                <Cpu className="w-4 h-4" />
               )}
-              {isAnalyzing ? "Processing" : "Analyze"}
+              {isAnalyzing ? "Processing..." : "Sync Engine"}
             </Button>
           </div>
         </div>
@@ -76,18 +81,18 @@ export function SchemaEditor() {
           onChange={(value) => setSchema(value || "")}
           options={{
             minimap: { enabled: false },
-            fontSize: 13,
+            fontSize: 14,
             lineNumbers: "on",
             roundedSelection: true,
             scrollBeyondLastLine: false,
             readOnly: isAnalyzing,
             automaticLayout: true,
-            padding: { top: 24, bottom: 24 },
-            fontFamily: "'Geist Mono', var(--font-mono)",
+            padding: { top: 32, bottom: 32 },
+            fontFamily: "'Source Code Pro', var(--font-source-code-pro), monospace",
             cursorStyle: "line",
-            lineHeight: 22,
+            lineHeight: 24,
             fontWeight: "500",
-            letterSpacing: -0.2,
+            letterSpacing: -0.1,
             scrollbar: {
               verticalScrollbarSize: 4,
               horizontalScrollbarSize: 4,

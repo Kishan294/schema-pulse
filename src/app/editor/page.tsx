@@ -90,7 +90,7 @@ export default function EditorPage() {
 
       <PanelGroup direction="horizontal" className="grow flex overflow-hidden">
         {/* Source Control Panel */}
-        <Panel defaultSize={30} minSize={20} className="flex flex-col bg-black/20 shrink-0">
+        <Panel defaultSize={30} minSize={20} maxSize={40} className="flex flex-col bg-black/20 shrink-0">
           <div className="h-10 border-b border-white/5 flex items-center justify-between px-4 bg-white/2 shrink-0">
             <div className="flex items-center gap-2">
               <Terminal className="w-3.5 h-3.5 text-white/20" />

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans, Geist_Mono, Source_Code_Pro } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,6 +20,12 @@ const geistMono = Geist_Mono({
   display: 'swap',
 });
 
+const sourceCodePro = Source_Code_Pro({
+  variable: "--font-source-code-pro",
+  subsets: ["latin"],
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   title: "SchemaPulse | AI-Powered Database Architect",
   description: "Visualize, optimize, and document your database schemas with Groq AI. Instant ER diagrams from SQL, Prisma, and Drizzle.",
@@ -32,7 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} ${plusJakarta.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${inter.variable} ${plusJakarta.variable} ${geistMono.variable} ${sourceCodePro.variable} antialiased`}>
         {children}
       </body>
     </html>
