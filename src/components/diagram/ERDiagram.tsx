@@ -244,10 +244,10 @@ function ERDiagramContent() {
         filter: (node: globalThis.Node) => {
           if (node instanceof HTMLElement) {
             // Exclude UI elements and buttons
-            if (node.tagName === "BUTTON") return false;
-            if (node.tagName === "FORM") return false;
+            if (node.tagName === "BUTTON" || node.tagName === "FORM") return false;
             if (node.classList.contains("react-flow__controls")) return false;
             if (node.classList.contains("react-flow__panel")) return false;
+            // Explicitly exclude the attribution (watermark) if desired
             if (node.classList.contains("react-flow__attribution")) return false;
           }
           return true;
@@ -286,10 +286,11 @@ function ERDiagramContent() {
   }, []);
 
   return (
-    <div
-      ref={reactFlowWrapper}
-      className="w-full h-full bg-background relative overflow-hidden"
-    >
+    <div className="w-full h-full bg-background relative overflow-hidden">
+      <div
+        ref={reactFlowWrapper}
+        className="w-full h-full flex flex-col"
+      >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -327,27 +328,6 @@ function ERDiagramContent() {
                 </span>
                 <span className="text-[10px] font-medium text-white/40">
                   AI processing in progress
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {isExporting && (
-          <div className="absolute inset-0 z-50 bg-[#05050a]/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <div className="absolute inset-0 bg-emerald-500/20 blur-2xl animate-pulse" />
-                <div className="w-12 h-12 rounded-xl bg-linear-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-400/20 flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-emerald-400/50 border-t-emerald-400 rounded-full animate-spin" />
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-xs font-semibold text-white/80">
-                  Generating Export...
-                </span>
-                <span className="text-[10px] font-medium text-white/40">
-                  Optimizing nodes and edges
                 </span>
               </div>
             </div>
@@ -405,7 +385,29 @@ function ERDiagramContent() {
         </Panel>
       </ReactFlow>
     </div>
-  );
+
+    {isExporting && (
+      <div className="absolute inset-0 z-50 bg-[#05050a]/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300 pointer-events-none">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-emerald-500/20 blur-2xl animate-pulse" />
+            <div className="w-12 h-12 rounded-xl bg-linear-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-400/20 flex items-center justify-center">
+              <div className="w-5 h-5 border-2 border-emerald-400/50 border-t-emerald-400 rounded-full animate-spin" />
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-xs font-semibold text-white/80">
+              Generating Export...
+            </span>
+            <span className="text-[10px] font-medium text-white/40">
+              Optimizing nodes and edges
+            </span>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
 }
 
 export function ERDiagram() {
