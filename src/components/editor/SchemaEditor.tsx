@@ -1,13 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useAppStore } from "@/store/useAppStore";
 import Editor from "@monaco-editor/react";
 import { Cpu, Loader2 } from "lucide-react";
@@ -17,7 +10,6 @@ export function SchemaEditor() {
     schema,
     setSchema,
     schemaType,
-    setSchemaType,
     isAnalyzing,
     setIsAnalyzing,
     setAnalysis,
@@ -46,31 +38,12 @@ export function SchemaEditor() {
     <div className="h-full flex flex-col bg-transparent">
       <div className="flex flex-col gap-4 p-6 border-b border-white/5 bg-white/1">
         <div className="flex items-center justify-between">
-          <Select
-            value={schemaType}
-            onValueChange={(value) => setSchemaType(value || "SQL")}
-          >
-            <SelectTrigger className="w-[140px] h-9 text-[11px] font-bold bg-white/5 border-white/10 text-white/40 rounded-xl hover:bg-white/10 hover:text-white transition-all">
-              <SelectValue placeholder="Protocol" />
-            </SelectTrigger>
-            <SelectContent className="bg-[#0a0a0a] border-white/10 shadow-3xl rounded-2xl">
-              <SelectItem value="SQL" className="text-xs py-3 font-semibold">
-                PostgreSQL
-              </SelectItem>
-              <SelectItem value="Prisma" className="text-xs py-3 font-semibold">
-                Prisma Schema
-              </SelectItem>
-              <SelectItem
-                value="Drizzle"
-                className="text-xs py-3 font-semibold"
-              >
-                Drizzle ORM
-              </SelectItem>
-              <SelectItem value="JSON" className="text-xs py-3 font-semibold">
-                JSON Structure
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
+              Protocol: SQL / AI Optimized
+            </span>
+          </div>
 
           <div className="flex items-center gap-3">
             <Button
@@ -119,7 +92,11 @@ export function SchemaEditor() {
               verticalScrollbarSize: 4,
               horizontalScrollbarSize: 4,
             },
-            renderLineHighlight: "none",
+            renderLineHighlight: "all",
+            lineDecorationsWidth: 0,
+            lineNumbersMinChars: 3,
+            glyphMargin: false,
+            folding: false,
             hideCursorInOverviewRuler: true,
           }}
           beforeMount={(monaco) => {
@@ -131,13 +108,17 @@ export function SchemaEditor() {
                 { token: "type", foreground: "06b6d4" },
                 { token: "string", foreground: "94a3b8" },
                 { token: "comment", foreground: "334155", fontStyle: "italic" },
+                { token: "operator", foreground: "3b82f6" },
               ],
               colors: {
                 "editor.background": "#050505",
                 "editorLineNumber.foreground": "#1e293b",
                 "editorLineNumber.activeForeground": "#3b82f6",
-                "editor.selectionBackground": "#3fb95010",
+                "editor.selectionBackground": "#3b82f640",
+                "editor.inactiveSelectionBackground": "#3b82f620",
+                "editor.lineHighlightBackground": "#ffffff05",
                 "editorCursor.foreground": "#3b82f6",
+                "editor.selectionHighlightBackground": "#3b82f630",
               },
             });
           }}

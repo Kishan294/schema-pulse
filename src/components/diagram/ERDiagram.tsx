@@ -19,6 +19,7 @@ import {
   ReactFlowProvider,
   ConnectionLineType,
   MarkerType,
+  SelectionMode,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { TableNode } from "./TableNode";
@@ -69,11 +70,11 @@ const initialEdges: Edge[] = [
     targetHandle: "user_id-left-target",
     label: "1:N",
     animated: true,
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#3b82f6" },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "#3b82f6", width: 14, height: 14 },
     style: {
       stroke: "#3b82f6",
-      strokeWidth: 3,
-      opacity: 0.8,
+      strokeWidth: 1.8,
+      opacity: 0.6,
     },
   },
 ];
@@ -150,29 +151,29 @@ function ERDiagramContent() {
           targetHandle,
           type: "smoothstep",
           label: rel.type,
-          labelBgPadding: [8, 4] as [number, number],
-          labelBgBorderRadius: 10,
-          labelBgStyle: { fill: "#0a0a0a", fillOpacity: 1, stroke: color, strokeWidth: 1 },
-          labelStyle: { fill: color, fontSize: 12, fontWeight: 900 },
+          labelBgPadding: [4, 2] as [number, number],
+          labelBgBorderRadius: 4,
+          labelBgStyle: { fill: "#0a0a0a", fillOpacity: 1, stroke: color, strokeWidth: 0.5 },
+          labelStyle: { fill: color, fontSize: 9, fontWeight: 800 },
           animated,
           markerEnd: {
             type: MarkerType.ArrowClosed,
             color,
-            width: 25,
-            height: 25,
+            width: 10,
+            height: 10,
           },
           markerStart: {
             type: MarkerType.Arrow,
             color,
-            width: 20,
-            height: 20,
+            width: 8,
+            height: 8,
           },
           style: {
             stroke: color,
-            strokeWidth: 4,
+            strokeWidth: 1.2,
             strokeDasharray,
-            opacity: 1,
-            filter: `drop-shadow(0 0 12px ${color}80)`,
+            opacity: 0.8,
+            filter: `drop-shadow(0 0 3px ${color}30)`,
           },
         } as Edge;
       });
@@ -237,13 +238,14 @@ function ERDiagramContent() {
         fitView
         connectionLineType={ConnectionLineType.SmoothStep}
         className="bg-dot-pattern"
-        minZoom={0.1}
-        maxZoom={2}
+        minZoom={0.05}
+        maxZoom={4}
+        elevateEdgesOnSelect={true}
+        selectNodesOnDrag={true}
+        selectionMode={SelectionMode.Full}
         defaultEdgeOptions={{
           type: 'smoothstep',
-          zIndex: 1000, // This puts edges "in front" of the nodes if they overlap, 
-          // but usually edges are drawn in a separate layer.
-          // In xyflow, we can use elevateEdgesOnSelect or just make them look premium.
+          zIndex: 1000,
         }}
       >
         <Background color="#111111" gap={32} size={1} />

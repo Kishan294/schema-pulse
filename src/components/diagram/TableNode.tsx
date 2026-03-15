@@ -46,46 +46,46 @@ export function TableNode({ data }: { data: TableNodeData }) {
             className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all group/item border border-transparent hover:border-white/5 relative"
           >
             {/* Left Handles */}
-            <div className="absolute -left-[13px] top-1/2 -translate-y-1/2 flex flex-col gap-0.5 z-20">
+            <div className="absolute -left-[9px] top-1/2 -translate-y-1/2 flex flex-col gap-0.5 z-20">
               <Handle
                 type="target"
                 position={Position.Left}
                 id={`${col.name.toLowerCase()}-left-target`}
-                className="w-2.5! h-2.5! bg-primary! border-2! border-background! opacity-0! group-hover/item:opacity-100! transition-all hover:scale-150!"
+                className="w-1.5! h-1.5! bg-primary! border! border-background! opacity-0! group-hover/item:opacity-100! transition-all hover:scale-150!"
               />
               <Handle
                 type="source"
                 position={Position.Left}
                 id={`${col.name.toLowerCase()}-left-source`}
-                className="w-2.5! h-2.5! bg-blue-400! border-2! border-background! opacity-0! group-hover/item:opacity-100! transition-all hover:scale-150!"
+                className="w-1.5! h-1.5! bg-blue-400! border! border-background! opacity-0! group-hover/item:opacity-100! transition-all hover:scale-150!"
               />
             </div>
             
             <div className="flex items-center gap-3">
               {col.isPrimary ? (
-                <Key className="w-3.5 h-3.5 text-primary drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]" />
+                <Key className="w-3 h-3 text-primary drop-shadow-[0_0_3px_rgba(59,130,246,0.3)]" />
               ) : col.linkColors && col.linkColors.length > 0 ? (
                 <div className="flex gap-1 items-center">
                   {col.linkColors.map((color, cIdx) => (
                     <div key={cIdx} className="relative">
-                      <Hash className="w-3.5 h-3.5 text-white/10" style={{ color: cIdx === 0 ? color : undefined, opacity: cIdx === 0 ? 0.8 : 1 }} />
+                      <Hash className="w-3 h-3 text-white/10" style={{ color: cIdx === 0 ? color : undefined, opacity: cIdx === 0 ? 0.8 : 1 }} />
                       <div 
-                        className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full animate-pulse shadow-lg" 
-                        style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}` }}
+                        className="absolute -top-0.5 -right-0.5 w-1 h-1 rounded-full animate-pulse shadow-lg" 
+                        style={{ backgroundColor: color, boxShadow: `0 0 5px ${color}` }}
                       />
                     </div>
                   ))}
                 </div>
               ) : (
-                <Hash className="w-3.5 h-3.5 text-white/10 group-hover/item:text-white/40 transition-colors" />
+                <Hash className="w-3 h-3 text-white/5 group-hover/item:text-white/20 transition-colors" />
               )}
               <span
-                className={`text-[13px] font-semibold tracking-tight transition-colors ${
+                className={`text-[12px] font-medium tracking-tight transition-colors ${
                   col.isPrimary 
                     ? "text-white" 
                     : (col.linkColors && col.linkColors.length > 0) 
                       ? "text-white/90" 
-                      : "text-white/40"
+                      : "text-white/30"
                 }`}
                 style={{ color: (col.linkColors && col.linkColors.length > 0) ? col.linkColors[0] : undefined }}
               >
@@ -94,23 +94,23 @@ export function TableNode({ data }: { data: TableNodeData }) {
             </div>
             
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-bold text-white/10 group-hover/item:text-white/25 uppercase tracking-widest pl-4 transition-colors">
+              <span className="text-[9px] font-bold text-white/5 group-hover/item:text-white/15 uppercase tracking-widest pl-4 transition-colors">
                 {col.type}
               </span>
               
               {/* Right Handles */}
-              <div className="absolute -right-[13px] top-1/2 -translate-y-1/2 flex flex-col gap-0.5 z-20">
+              <div className="absolute -right-[9px] top-1/2 -translate-y-1/2 flex flex-col gap-0.5 z-20">
                 <Handle
                   type="source"
                   position={Position.Right}
                   id={`${col.name.toLowerCase()}-right-source`}
-                  className="w-2.5! h-2.5! bg-blue-400! border-2! border-background! opacity-0! group-hover/item:opacity-100! transition-all hover:scale-150!"
+                  className="w-1.5! h-1.5! bg-blue-400! border! border-background! opacity-0! group-hover/item:opacity-100! transition-all hover:scale-150!"
                 />
                 <Handle
                   type="target"
                   position={Position.Right}
                   id={`${col.name.toLowerCase()}-right-target`}
-                  className="w-2.5! h-2.5! bg-primary! border-2! border-background! opacity-0! group-hover/item:opacity-100! transition-all hover:scale-150!"
+                  className="w-1.5! h-1.5! bg-primary! border! border-background! opacity-0! group-hover/item:opacity-100! transition-all hover:scale-150!"
                 />
               </div>
             </div>
