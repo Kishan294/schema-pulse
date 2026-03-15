@@ -7,9 +7,6 @@ import { FAQ } from "@/components/landing/FAQ";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
-  Twitter,
-  Github,
-  Linkedin,
   Database,
   Sparkles,
   Globe,
@@ -206,99 +203,35 @@ export default function Home() {
         <FAQ />
       </main>
 
-      <footer className="border-t border-white/5 py-24 bg-background relative overflow-hidden">
+      <footer className="border-t border-white/5 py-12 bg-background relative overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-20 mb-24">
-            <div className="col-span-1 md:col-span-2">
-              <Link
-                href="/"
-                className="flex items-center gap-3 font-bold text-2xl mb-8 active:scale-95 transition-transform w-fit"
-              >
-                <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                  <Database className="w-5 h-5 text-white" />
-                </div>
-                <span>SchemaPulse</span>
-              </Link>
-              <p className="text-white/40 text-base max-w-xs leading-relaxed mb-10 font-medium italic">
-                Empowering engineering teams to visualize and optimize critical
-                database architectures.
-              </p>
-              <div className="flex gap-4">
-                {[Twitter, Github, Linkedin].map((Icon, i) => (
-                  <a
-                    key={i}
-                    href="#"
-                    className="w-12 h-12 rounded-xl border border-white/5 bg-white/2 flex items-center justify-center hover:bg-white/5 transition-all hover:-translate-y-1"
-                  >
-                    <Icon className="w-5 h-5 text-white/40 hover:text-white transition-colors" />
-                  </a>
-                ))}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <Link
+              href="/"
+              className="flex items-center gap-3 font-bold text-xl active:scale-95 transition-transform shrink-0"
+            >
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <Database className="w-4 h-4 text-white" />
+              </div>
+              <span>SchemaPulse</span>
+            </Link>
+            
+            <div className="grow flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
+              <div className="text-[10px] font-bold text-white/40 uppercase tracking-[0.4em]">
+                © {new Date().getFullYear()} SchemaPulse Protocol.
+              </div>
+              
+              <div className="flex gap-8 text-[10px] font-bold text-white/40 uppercase tracking-[0.4em]">
+                <span className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  Operational
+                </span>
+                <span>Inference: Stable</span>
               </div>
             </div>
-
-            <div className="space-y-8">
-              <h5 className="font-bold text-white text-xs uppercase tracking-widest">
-                Platform
-              </h5>
-              <ul className="space-y-4 text-white/40 text-sm font-semibold">
-                <li>
-                  <Link
-                    href="#features"
-                    className="hover:text-white transition-colors"
-                  >
-                    Capabilities
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/editor"
-                    className="hover:text-white transition-colors"
-                  >
-                    Workspace
-                  </Link>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Documentation
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div className="space-y-8">
-              <h5 className="font-bold text-white text-xs uppercase tracking-widest">
-                Legal
-              </h5>
-              <ul className="space-y-4 text-white/40 text-sm font-semibold">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Security Audit
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Terms of Service
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-10">
-            <div className="text-[10px] font-bold text-white/10 uppercase tracking-[0.4em]">
-              © 2024 SchemaPulse Protocol. All rights reserved.
-            </div>
-            <div className="flex gap-8 text-[10px] font-bold text-white/10 uppercase tracking-[0.4em]">
-              <span className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500/50 animate-pulse" />
-                Operational
-              </span>
-              <span>Inference: Stable</span>
+            
+            <div className="shrink-0 hidden lg:block text-[10px] font-bold text-white/20 uppercase tracking-[0.4em]">
+              v1.0.4-beta
             </div>
           </div>
         </div>

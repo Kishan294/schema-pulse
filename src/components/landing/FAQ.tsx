@@ -64,7 +64,7 @@ export function FAQ() {
               >
                 <AccordionTrigger className="text-left text-lg font-bold py-8 hover:no-underline group-hover:text-primary transition-colors tracking-tight">
                   <div className="flex items-center gap-6">
-                    <span className="text-white/10 group-hover:text-primary/30 transition-colors font-mono text-sm leading-none">
+                    <span className="text-white/30 group-hover:text-primary transition-colors font-mono text-sm leading-none">
                       0{index + 1}
                     </span>
                     {faq.question}
