@@ -3,15 +3,12 @@
 import { ERDiagram } from "@/components/diagram/ERDiagram";
 import { SchemaEditor } from "@/components/editor/SchemaEditor";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/store/useAppStore";
 import {
   ArrowLeft,
   ChevronRight,
   Cpu,
-  History,
   LayoutGrid,
-  Settings2,
   ShieldCheck,
   Sparkles,
   Terminal,
@@ -69,22 +66,6 @@ export default function EditorPage() {
               </span>
             </div>
           )}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="w-9 h-9 text-white/20 hover:text-white"
-            >
-              <History className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="w-9 h-9 text-white/20 hover:text-white"
-            >
-              <Settings2 className="w-4 h-4" />
-            </Button>
-          </div>
         </div>
       </header>
 
@@ -130,19 +111,19 @@ export default function EditorPage() {
                       Executive Summary
                     </div>
                     <p className="text-sm text-white/60 leading-relaxed font-medium italic border-l-2 border-white/5 pl-4">
-                      &quot;{analysis.explanation}&quot;
+                      &quot;{analysis?.explanation}&quot;
                     </p>
                   </div>
 
                   {/* Smells / Warnings */}
-                  {analysis.smells && analysis.smells.length > 0 && (
+                  {analysis?.smells && analysis.smells.length > 0 && (
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-[8px] font-bold text-red-500/50 uppercase tracking-widest">
                         <Terminal className="w-3 h-3" />
                         Detected Smells
                       </div>
                       <div className="space-y-2">
-                        {analysis.smells.map((smell: string, i: number) => (
+                        {analysis?.smells.map((smell: string, i: number) => (
                           <div key={i} className="text-[11px] font-semibold text-red-400/70 bg-red-500/5 border border-red-500/10 p-2.5 rounded-lg flex gap-3 italic">
                             <span className="opacity-30">0{i+1}</span>
                             {smell}
@@ -159,7 +140,7 @@ export default function EditorPage() {
                       Optimization Path
                     </div>
                     <div className="space-y-3">
-                      {analysis.optimizations?.map((opt: string, i: number) => (
+                      {analysis?.optimizations?.map((opt: string, i: number) => (
                         <div
                           key={i}
                           className="text-[11px] font-semibold text-white/40 border-l border-primary/40 pl-4 py-1 hover:text-white/60 transition-colors"
