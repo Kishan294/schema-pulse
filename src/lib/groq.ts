@@ -1,10 +1,19 @@
 import Groq from "groq-sdk";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+const getGroqClient = () => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    console.warn("GROQ_API_KEY is not defined. AI features will be unavailable.");
+    return null;
+  }
+  return new Groq({ apiKey });
+};
 
 export async function analyzeSchema(schema: string, type: string) {
+  const groq = getGroqClient();
+  if (!groq) {
+    throw new Error("AI Analysis service is not configured (missing API key).");
+  }
   const prompt = `
     You are an expert database architect. Analyze the following ${type} schema.
     
