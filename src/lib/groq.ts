@@ -1,0 +1,52 @@
+import Groq from "groq-sdk";
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+export async function analyzeSchema(schema: string, type: string) {
+  const prompt = `
+    You are an expert database architect. Analyze the following ${type} schema.
+    
+    Tasks:
+    1. Explain the overall architecture in simple terms.
+    2. Identify all entities and their primary keys.
+    3. Detect all relationships (explicit and implicit).
+    4. Suggest 3 performance optimizations (indexes, normalization, etc.).
+    5. Detect any "database smells" or anti-patterns.
+
+    Schema:
+    ${schema}
+
+    Return the response in a structured JSON format with the following keys:
+    {
+      "explanation": "string",
+      "entities": [{ "name": "string", "description": "string", "columns": [] }],
+      "relationships": [{ "from": "string", "to": "string", "type": "string", "description": "string" }],
+      "optimizations": ["string"],
+      "smells": ["string"]
+    }
+  `;
+
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: "You are a senior database architect that outputs valid JSON only.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      model: "llama3-70b-8192",
+      response_format: { type: "json_object" },
+    });
+
+    return JSON.parse(completion.choices[0].message.content || "{}");
+  } catch (error) {
+    console.error("Groq API Error:", error);
+    throw new Error("Failed to analyze schema");
+  }
+}
