@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Cpu, Download, LayoutGrid, Share2 } from "lucide-react";
+import { Cpu, Download, LayoutGrid } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import {
   ReactFlow,
@@ -24,7 +24,6 @@ import "@xyflow/react/dist/style.css";
 import { TableNode } from "./TableNode";
 import { useAppStore } from "@/store/useAppStore";
 import { toPng, toSvg } from "html-to-image";
-import { Database } from "lucide-react";
 
 const nodeTypes = {
   tableNode: TableNode,
@@ -291,18 +290,6 @@ function ERDiagramContent() {
               Snapshot
             </Button>
           </div>
-          <Button 
-            className="h-12 px-8 bg-primary text-white hover:bg-primary/90 font-black rounded-2xl shadow-[0_10px_40px_rgba(59,130,246,0.4)] transition-all group active:scale-95 border border-primary/20"
-            onClick={() => {
-              const text = JSON.stringify({ nodes, edges }, null, 2);
-              navigator.clipboard.writeText(text);
-              alert("Blueprint configuration copied!");
-            }}
-          >
-            <Database className="w-4.5 h-4.5 mr-3" />
-            Deploy Blueprint
-            <Share2 className="w-4.5 h-4.5 ml-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-          </Button>
         </Panel>
 
 

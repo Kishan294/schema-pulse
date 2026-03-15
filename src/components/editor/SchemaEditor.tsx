@@ -66,7 +66,7 @@ export function SchemaEditor() {
               ) : (
                 <Cpu className="w-4 h-4" />
               )}
-              {isAnalyzing ? "Processing..." : "Sync Engine"}
+              {isAnalyzing ? "Processing..." : "Visualize Blueprint"}
             </Button>
           </div>
         </div>
