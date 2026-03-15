@@ -3,7 +3,9 @@ import Groq from "groq-sdk";
 const getGroqClient = () => {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    console.warn("GROQ_API_KEY is not defined. AI features will be unavailable.");
+    console.warn(
+      "GROQ_API_KEY is not defined. AI features will be unavailable.",
+    );
     return null;
   }
   return new Groq({ apiKey });
@@ -42,14 +44,15 @@ export async function analyzeSchema(schema: string, type: string) {
       messages: [
         {
           role: "system",
-          content: "You are a senior database architect that outputs valid JSON only.",
+          content:
+            "You are a senior database architect that outputs valid JSON only.",
         },
         {
           role: "user",
           content: prompt,
         },
       ],
-      model: "llama3-70b-8192",
+      model: "llama-3.3-70b-versatile",
       response_format: { type: "json_object" },
     });
 
