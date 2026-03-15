@@ -11,7 +11,6 @@ import {
   Controls,
   type Edge,
   type Node,
-  MiniMap,
   Panel,
   useEdgesState,
   useNodesState,
@@ -306,46 +305,6 @@ function ERDiagramContent() {
           </Button>
         </Panel>
 
-        <Panel position="bottom-right" className="m-10 group">
-          <div className="bg-black/60 border border-white/10 backdrop-blur-3xl rounded-4xl overflow-hidden shadow-2xl w-72 transition-all duration-700 hover:border-primary/50 hover:scale-105">
-            <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/2">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
-                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white/90">
-                  Global Map
-                </span>
-              </div>
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-              </div>
-            </div>
-            <div className="p-2">
-              <MiniMap
-                zoomable
-                pannable
-                className="bg-transparent! m-0! w-full! h-40! opacity-80!"
-                nodeColor="#1a1a1a"
-                maskColor="rgba(0, 0, 0, 0.5)"
-              />
-            </div>
-            <div className="px-5 pb-6 flex justify-between gap-5 mt-3">
-              <div className="grow bg-white/5 border border-white/5 p-3.5 rounded-2xl text-center group/stat hover:bg-primary/5 transition-colors">
-                <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-1.5 group-hover/stat:text-primary/50">
-                  Nodes
-                </div>
-                <div className="text-lg font-black text-white group-hover/stat:text-primary">{nodes.length}</div>
-              </div>
-              <div className="grow bg-white/5 border border-white/5 p-3.5 rounded-2xl text-center group/stat hover:bg-primary/5 transition-colors">
-                <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-1.5 group-hover/stat:text-primary/50">
-                  Edges
-                </div>
-                <div className="text-lg font-black text-white group-hover/stat:text-primary">{edges.length}</div>
-              </div>
-            </div>
-          </div>
-        </Panel>
 
         <Panel position="bottom-left" className="m-10 flex items-center gap-5">
           <div className="px-6 py-3.5 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-3xl flex items-center gap-4 hover:border-primary/30 transition-colors cursor-help">

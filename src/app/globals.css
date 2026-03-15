@@ -136,19 +136,32 @@
 .perspective-2000 {
   perspective: 2000px;
 }
-/* ReactFlow Custom Styles */
+/* ReactFlow MiniMap Premium Styling */
 .react-flow__minimap {
-  background-color: rgba(0, 0, 0, 0.4) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
-  border-radius: 12px !important;
+  background-color: transparent !important;
+  backdrop-filter: blur(10px);
+  border: none !important;
+  pointer-events: all;
+  opacity: 1 !important;
+}
+
+.react-flow__minimap-mask {
+  fill: rgba(0, 0, 0, 0.4) !important;
+  stroke: rgba(59, 130, 246, 0.2) !important;
+  stroke-width: 2 !important;
 }
 
 .react-flow__minimap-node {
+  fill: rgba(255, 255, 255, 0.05) !important;
+  stroke: rgba(255, 255, 255, 0.1) !important;
+  stroke-width: 1 !important;
+  rx: 6;
+  ry: 6;
+}
+
+.react-flow__minimap-node.selected {
   fill: rgba(59, 130, 246, 0.4) !important;
-  stroke: none !important;
-  rx: 8;
-  ry: 8;
+  stroke: var(--color-primary) !important;
 }
 
 .react-flow__edge-path {
