@@ -3,7 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/store/useAppStore";
 import Editor from "@monaco-editor/react";
-import { Cpu, Loader2 } from "lucide-react";
+import { Cpu, Loader2, AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+
+interface RateLimitInfo {
+  remaining: number;
+  resetTime: number;
+  limit: number;
+}
 
 export function SchemaEditor() {
   const {
@@ -15,6 +22,51 @@ export function SchemaEditor() {
     setAnalysis,
   } = useAppStore();
 
+  const [rateLimit, setRateLimit] = useState<RateLimitInfo | null>(null);
+  const [countdown, setCountdown] = useState<string>("");
+
+  useEffect(() => {
+    fetchRateLimit();
+    const interval = setInterval(fetchRateLimit, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (rateLimit) {
+      const updateCountdown = () => {
+        const now = Date.now();
+        const diff = rateLimit.resetTime - now;
+        if (diff <= 0) {
+          setCountdown("0m");
+        } else {
+          const minutes = Math.ceil(diff / 60000);
+          setCountdown(`${minutes}m`);
+        }
+      };
+      updateCountdown();
+      const interval = setInterval(updateCountdown, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [rateLimit]);
+
+  const fetchRateLimit = async () => {
+    try {
+      const response = await fetch("/api/ai/analyze", { method: "HEAD" });
+      const remaining = response.headers.get("x-ratelimit-remaining");
+      const reset = response.headers.get("x-ratelimit-reset");
+      const limit = response.headers.get("x-ratelimit-limit");
+      if (remaining && reset && limit) {
+        setRateLimit({
+          remaining: parseInt(remaining),
+          resetTime: parseInt(reset),
+          limit: parseInt(limit),
+        });
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+  };
+
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
     try {
@@ -25,6 +77,7 @@ export function SchemaEditor() {
       const data = await response.json();
       if (data.error) throw new Error(data.error);
       setAnalysis(data);
+      fetchRateLimit();
     } catch (error) {
       console.error("Analysis failed:", error);
       const errorMessage = error instanceof Error ? error.message : "Analysis failed. Please check your API configuration.";
@@ -51,22 +104,40 @@ export function SchemaEditor() {
           </div>
 
           <div className="flex items-center gap-3">
+            {rateLimit && rateLimit.remaining <= 2 && rateLimit.remaining > 0 && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-[9px] font-bold text-amber-500 uppercase tracking-wider">
+                  {rateLimit.remaining} AI left
+                </span>
+              </div>
+            )}
+            {rateLimit && rateLimit.remaining === 0 && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
+                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider">
+                  Reset in {countdown}
+                </span>
+              </div>
+            )}
             <Button
               size="sm"
               className={`h-10 gap-3 text-[11px] font-black uppercase tracking-widest transition-all rounded-xl px-6 border ${
                 isAnalyzing
                   ? "bg-primary/20 text-primary border-primary/20"
-                  : "bg-primary text-white hover:bg-primary/90 border-primary/20 shadow-[0_10px_30px_rgba(59,130,246,0.3)] active:scale-95"
+                  : rateLimit && rateLimit.remaining === 0
+                    ? "bg-white/5 text-white/20 border-white/5 cursor-not-allowed"
+                    : "bg-primary text-white hover:bg-primary/90 border-primary/20 shadow-[0_10px_30px_rgba(59,130,246,0.3)] active:scale-95"
               }`}
               onClick={handleAnalyze}
-              disabled={isAnalyzing}
+              disabled={isAnalyzing || !!(rateLimit && rateLimit.remaining === 0)}
             >
               {isAnalyzing ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Cpu className="w-4 h-4" />
               )}
-              {isAnalyzing ? "Processing..." : "Visualize Blueprint"}
+              {isAnalyzing ? "Processing..." : rateLimit && rateLimit.remaining === 0 ? "Limit Reached" : "Visualize Blueprint"}
             </Button>
           </div>
         </div>
@@ -137,9 +208,16 @@ export function SchemaEditor() {
           <div className="text-[9px] font-bold font-mono text-white/10 uppercase tracking-widest leading-none">
             Lines: {schema.split("\n").length}
           </div>
-          <div className="flex items-center gap-2 text-[9px] font-bold font-mono text-white/10 uppercase tracking-widest leading-none">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" />
-            Engine: Groq-Llama-3.3
+          <div className="flex items-center gap-4">
+            {rateLimit && (
+              <div className="flex items-center gap-1.5 text-[9px] font-bold font-mono uppercase tracking-widest leading-none">
+                <div className={`w-1.5 h-1.5 rounded-full ${rateLimit.remaining <= 2 ? 'bg-amber-500' : 'bg-primary/40'} animate-pulse`} />
+                AI: {rateLimit.remaining}/{rateLimit.limit}
+              </div>
+            )}
+            <div className="text-[9px] font-bold font-mono text-white/10 uppercase tracking-widest leading-none">
+              Groq-Llama-3.3
+            </div>
           </div>
         </div>
       </div>

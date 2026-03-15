@@ -3,7 +3,6 @@
 import {
   Activity,
   Database,
-  FileJson,
   GitBranch,
   LayoutGrid,
   Sparkles,
@@ -12,9 +11,9 @@ import { motion } from "motion/react";
 
 const features = [
   {
-    title: "AI Semantic Engine",
+    title: "AI-Powered Analysis",
     description:
-      "Groq-powered logic that interprets your database structure and provides human-readable explanations.",
+      "Optional Groq-powered AI that analyzes your schema and provides architectural insights, optimization suggestions, and detects potential issues.",
     icon: Sparkles,
     color: "text-blue-400",
     bg: "bg-blue-500/10",
@@ -22,7 +21,7 @@ const features = [
   {
     title: "Relationship Mapping",
     description:
-      "Detects implicit connections between tables that aren't defined by explicit foreign keys using LLM inference.",
+      "Automatically detects and visualizes relationships between tables including 1:1, 1:N, and N:M connections with intelligent edge rendering.",
     icon: GitBranch,
     color: "text-cyan-400",
     bg: "bg-cyan-500/10",
@@ -30,18 +29,10 @@ const features = [
   {
     title: "Instant Visualization",
     description:
-      "Automatic ER diagram generation with intelligent layout and relationship mapping for complex structures.",
+      "Real-time ER diagram generation with interactive nodes, draggable tables, zoom/pan controls, and export to PNG or SVG formats.",
     icon: LayoutGrid,
     color: "text-indigo-400",
     bg: "bg-indigo-500/10",
-  },
-  {
-    title: "Universal Support",
-    description:
-      "Built-in support for SQL, Prisma, and Drizzle. Native comprehension of modern ORM protocols.",
-    icon: FileJson,
-    color: "text-primary",
-    bg: "bg-primary/10",
   },
 ];
 
