@@ -16,11 +16,6 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import {
-  Panel,
-  PanelGroup,
-  PanelResizeHandle,
-} from "react-resizable-panels";
 
 export default function EditorPage() {
   const { isAnalyzing, analysis } = useAppStore();
@@ -69,9 +64,9 @@ export default function EditorPage() {
         </div>
       </header>
 
-      <PanelGroup direction="horizontal" className="grow flex overflow-hidden">
+      <div className="grow flex overflow-hidden">
         {/* Source Control Panel */}
-        <Panel defaultSize={30} minSize={20} maxSize={40} className="flex flex-col bg-black/20 shrink-0">
+        <div className="w-[35%] flex flex-col bg-black/20 shrink-0">
           <div className="h-10 border-b border-white/5 flex items-center justify-between px-4 bg-white/2 shrink-0">
             <div className="flex items-center gap-2">
               <Terminal className="w-3.5 h-3.5 text-white/20" />
@@ -154,12 +149,10 @@ export default function EditorPage() {
               </motion.div>
             )}
           </AnimatePresence>
-        </Panel>
-
-        <PanelResizeHandle className="w-1 bg-white/5 hover:bg-primary/40 transition-colors cursor-col-resize active:bg-primary z-50" />
+        </div>
 
         {/* Global Blueprint Canvas */}
-        <Panel className="grow relative bg-background flex flex-col">
+        <div className="grow relative bg-background flex flex-col">
           <div className="absolute top-6 left-6 z-10 hidden md:flex items-center gap-3 p-1.5 rounded-xl bg-black/40 border border-white/5 backdrop-blur-xl">
             <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 text-[9px] font-bold text-white/30 uppercase tracking-[0.2em]">
               <Zap className="w-3 h-3" />
@@ -174,8 +167,8 @@ export default function EditorPage() {
           <div className="grow">
             <ERDiagram />
           </div>
-        </Panel>
-      </PanelGroup>
+        </div>
+      </div>
     </div>
   );
 }
