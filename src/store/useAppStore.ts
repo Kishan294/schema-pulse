@@ -1,10 +1,21 @@
 import { create } from "zustand";
-import { Node, Edge } from "reactflow";
+import { type Node, type Edge } from "@xyflow/react";
 
 interface AnalysisResult {
   explanation: string;
-  entities: { name: string; description: string; columns: string[] }[];
-  relationships: { from: string; to: string; type: string; description: string }[];
+  entities: { 
+    name: string; 
+    description: string; 
+    columns: { name: string; type: string; isPrimary: boolean }[] 
+  }[];
+  relationships: { 
+    from: string; 
+    to: string; 
+    fromColumn?: string;
+    toColumn?: string;
+    type: string; 
+    description: string 
+  }[];
   optimizations: string[];
   smells: string[];
 }

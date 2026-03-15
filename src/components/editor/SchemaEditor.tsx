@@ -31,9 +31,12 @@ export function SchemaEditor() {
         body: JSON.stringify({ schema, type: schemaType }),
       });
       const data = await response.json();
+      if (data.error) throw new Error(data.error);
       setAnalysis(data);
     } catch (error) {
       console.error("Analysis failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "Analysis failed. Please check your API configuration.";
+      alert(errorMessage);
     } finally {
       setIsAnalyzing(false);
     }

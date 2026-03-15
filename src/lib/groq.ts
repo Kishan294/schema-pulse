@@ -32,8 +32,19 @@ export async function analyzeSchema(schema: string, type: string) {
     Return the response in a structured JSON format with the following keys:
     {
       "explanation": "string",
-      "entities": [{ "name": "string", "description": "string", "columns": [] }],
-      "relationships": [{ "from": "string", "to": "string", "type": "string", "description": "string" }],
+      "entities": [{ 
+        "name": "string", 
+        "description": "string", 
+        "columns": [{ "name": "string", "type": "string", "isPrimary": boolean }] 
+      }],
+      "relationships": [{ 
+        "from": "string", 
+        "to": "string", 
+        "fromColumn": "string",
+        "toColumn": "string",
+        "type": "1:1" | "1:N" | "N:M", 
+        "description": "string" 
+      }],
       "optimizations": ["string"],
       "smells": ["string"]
     }

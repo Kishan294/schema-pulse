@@ -102,45 +102,66 @@ export default function EditorPage() {
           <AnimatePresence>
             {analysis && (
               <motion.div
-                initial={{ height: 0 }}
-                animate={{ height: "auto" }}
-                className="border-t border-white/5 bg-primary/5"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="border-t border-white/5 bg-primary/5 max-h-[500px] overflow-y-auto custom-scrollbar"
               >
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-8">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-primary" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-white/80">
-                        Inference Report
+                      <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/90">
+                        Blueprint Audit
                       </span>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-white/20" />
+                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[8px] uppercase tracking-widest h-5">
+                      AI Verified
+                    </Badge>
                   </div>
 
-                  <p className="text-sm text-white/50 leading-relaxed font-medium italic">
-                    &quot;{analysis.explanation}&quot;
-                  </p>
-
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-px grow bg-white/5" />
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">
-                        Insights
-                      </span>
-                      <div className="h-px grow bg-white/5" />
+                    <div className="flex items-center gap-2 text-[8px] font-bold text-white/20 uppercase tracking-widest">
+                      <Zap className="w-3 h-3 text-yellow-500/50" />
+                      Executive Summary
                     </div>
+                    <p className="text-sm text-white/60 leading-relaxed font-medium italic border-l-2 border-white/5 pl-4">
+                      &quot;{analysis.explanation}&quot;
+                    </p>
+                  </div>
 
-                    <div className="space-y-3">
-                      {analysis.optimizations
-                        ?.slice(0, 2)
-                        .map((opt: string, i: number) => (
-                          <div
-                            key={i}
-                            className="text-xs font-semibold text-white/40 border-l border-primary/40 pl-4 py-1"
-                          >
-                            {opt}
+                  {/* Smells / Warnings */}
+                  {analysis.smells && analysis.smells.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-[8px] font-bold text-red-500/50 uppercase tracking-widest">
+                        <Terminal className="w-3 h-3" />
+                        Detected Smells
+                      </div>
+                      <div className="space-y-2">
+                        {analysis.smells.map((smell: string, i: number) => (
+                          <div key={i} className="text-[11px] font-semibold text-red-400/70 bg-red-500/5 border border-red-500/10 p-2.5 rounded-lg flex gap-3 italic">
+                            <span className="opacity-30">0{i+1}</span>
+                            {smell}
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Optimizations */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-[8px] font-bold text-primary/50 uppercase tracking-widest">
+                      <ChevronRight className="w-3 h-3" />
+                      Optimization Path
+                    </div>
+                    <div className="space-y-3">
+                      {analysis.optimizations?.map((opt: string, i: number) => (
+                        <div
+                          key={i}
+                          className="text-[11px] font-semibold text-white/40 border-l border-primary/40 pl-4 py-1 hover:text-white/60 transition-colors"
+                        >
+                          {opt}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
