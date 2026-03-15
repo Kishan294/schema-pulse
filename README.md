@@ -21,15 +21,28 @@ SchemaPulse is a modern, high-performance ER diagram generator that uses AI to a
 
 ## 📦 Getting Started
 
-First, install dependencies:
+### 1. Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18+)
+- [pnpm](https://pnpm.io/) (Recommended)
+
+### 2. Environment Setup
+
+Copy the example environment file and fill in your API keys:
+
+```bash
+cp .env.example .env
+```
+
+| Variable              | Description                                                | Default                  |
+| --------------------- | ---------------------------------------------------------- | ------------------------ |
+| `GROQ_API_KEY`        | Your API key from [Groq Console](https://console.groq.com/) | -                        |
+| `NEXT_PUBLIC_APP_URL` | The base URL for the application                           | `http://localhost:3000` |
+
+### 3. Installation & Run
 
 ```bash
 pnpm install
-```
-
-Then, run the development server:
-
-```bash
 pnpm dev
 ```
 
