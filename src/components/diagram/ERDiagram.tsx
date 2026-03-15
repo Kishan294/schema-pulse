@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Download, LayoutGrid } from "lucide-react";
+import { Download, LayoutGrid, FileText } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ReactFlow,
@@ -10,7 +10,7 @@ import {
   type Connection,
   Controls,
   type Edge,
-  type Node,
+  type Node as RFNode,
   Panel,
   useEdgesState,
   useNodesState,
@@ -23,13 +23,14 @@ import {
 import "@xyflow/react/dist/style.css";
 import { TableNode } from "./TableNode";
 import { useAppStore } from "@/store/useAppStore";
-import { toPng, toSvg } from "html-to-image";
+import { domToSvg, domToPng } from "modern-screenshot";
+import jsPDF from "jspdf";
 
 const nodeTypes = {
   tableNode: TableNode,
 };
 
-const initialNodes: Node[] = [
+const initialNodes: RFNode[] = [
   {
     id: "users",
     type: "tableNode",
@@ -68,7 +69,12 @@ const initialEdges: Edge[] = [
     targetHandle: "user_id-left-target",
     label: "1:N",
     animated: true,
-    markerEnd: { type: MarkerType.ArrowClosed, color: "#3b82f6", width: 14, height: 14 },
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      color: "#3b82f6",
+      width: 14,
+      height: 14,
+    },
     style: {
       stroke: "#3b82f6",
       strokeWidth: 1.8,
@@ -79,7 +85,7 @@ const initialEdges: Edge[] = [
 
 function ERDiagramContent() {
   const { analysis, isAnalyzing } = useAppStore();
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState<RFNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { fitView } = useReactFlow();
@@ -95,7 +101,7 @@ function ERDiagramContent() {
     if (analysis && analysis.entities) {
       const RELATION_COLORS = [
         "#3b82f6", // Blue
-        "#06b6d4", // Cyan 
+        "#06b6d4", // Cyan
         "#8b5cf6", // Purple
         "#f59e0b", // Amber
         "#ec4899", // Pink
@@ -104,22 +110,27 @@ function ERDiagramContent() {
       ];
 
       const linkedColumns = new Map<string, Map<string, string[]>>();
-      
+
       const newEdges = analysis.relationships.map((rel, idx) => {
         const color = RELATION_COLORS[idx % RELATION_COLORS.length];
         const fromTable = rel.from.toLowerCase();
         const toTable = rel.to.toLowerCase();
-        
+
         // Logical ER connection: From Parent (PK) to Child (FK)
         // Usually, the one side is 'from' and the many side is 'to'.
         // If fromTable is at x=0 and toTable is at x=500:
         // Use right-source on fromTable and left-target on toTable.
-        const sourceHandle = rel.fromColumn ? `${rel.fromColumn.toLowerCase()}-right-source` : undefined;
-        const targetHandle = rel.toColumn ? `${rel.toColumn.toLowerCase()}-left-target` : undefined;
-        
+        const sourceHandle = rel.fromColumn
+          ? `${rel.fromColumn.toLowerCase()}-right-source`
+          : undefined;
+        const targetHandle = rel.toColumn
+          ? `${rel.toColumn.toLowerCase()}-left-target`
+          : undefined;
+
         if (rel.fromColumn) {
           const colName = rel.fromColumn.toLowerCase();
-          if (!linkedColumns.has(fromTable)) linkedColumns.set(fromTable, new Map());
+          if (!linkedColumns.has(fromTable))
+            linkedColumns.set(fromTable, new Map());
           const colMap = linkedColumns.get(fromTable)!;
           if (!colMap.has(colName)) colMap.set(colName, []);
           colMap.get(colName)!.push(color);
@@ -127,7 +138,8 @@ function ERDiagramContent() {
 
         if (rel.toColumn) {
           const colName = rel.toColumn.toLowerCase();
-          if (!linkedColumns.has(toTable)) linkedColumns.set(toTable, new Map());
+          if (!linkedColumns.has(toTable))
+            linkedColumns.set(toTable, new Map());
           const colMap = linkedColumns.get(toTable)!;
           if (!colMap.has(colName)) colMap.set(colName, []);
           colMap.get(colName)!.push(color);
@@ -136,10 +148,17 @@ function ERDiagramContent() {
         const animated = rel.type === "1:N";
         let strokeDasharray = "";
         switch (rel.type) {
-          case "1:1": strokeDasharray = ""; break;
-          case "1:N": strokeDasharray = "8 4"; break;
-          case "N:M": strokeDasharray = "3 3"; break;
-          default: strokeDasharray = "8 4";
+          case "1:1":
+            strokeDasharray = "";
+            break;
+          case "1:N":
+            strokeDasharray = "8 4";
+            break;
+          case "N:M":
+            strokeDasharray = "3 3";
+            break;
+          default:
+            strokeDasharray = "8 4";
         }
 
         return {
@@ -152,7 +171,12 @@ function ERDiagramContent() {
           label: rel.type,
           labelBgPadding: [4, 2] as [number, number],
           labelBgBorderRadius: 4,
-          labelBgStyle: { fill: "#0a0a0a", fillOpacity: 1, stroke: color, strokeWidth: 0.5 },
+          labelBgStyle: {
+            fill: "#0a0a0a",
+            fillOpacity: 1,
+            stroke: color,
+            strokeWidth: 0.5,
+          },
           labelStyle: { fill: color, fontSize: 9, fontWeight: 800 },
           animated,
           markerEnd: {
@@ -185,15 +209,16 @@ function ERDiagramContent() {
           position: { x: (idx % 3) * 550, y: Math.floor(idx / 3) * 600 },
           data: {
             label: ent.name,
-            columns: ent.columns.map(col => {
+            columns: ent.columns.map((col) => {
               const colName = col.name;
-              const linkColors = linkedColumns.get(tableName)?.get(colName.toLowerCase()) || [];
-              
+              const linkColors =
+                linkedColumns.get(tableName)?.get(colName.toLowerCase()) || [];
+
               return {
                 name: colName,
                 type: col.type || "varchar",
                 isPrimary: col.isPrimary || false,
-                linkColors: linkColors
+                linkColors: linkColors,
               };
             }),
           },
@@ -206,21 +231,53 @@ function ERDiagramContent() {
     }
   }, [analysis, setNodes, setEdges, fitView]);
 
-  const onExport = useCallback(async (format: 'png' | 'svg') => {
+  const onExport = useCallback(async (format: "pdf" | "svg") => {
     if (reactFlowWrapper.current === null) return;
-    const element = reactFlowWrapper.current.querySelector('.react-flow__viewport') as HTMLElement;
+    const element = reactFlowWrapper.current;
     if (!element) return;
 
     setIsExporting(true);
     try {
-      const dataUrl = format === 'png'
-        ? await toPng(element, { backgroundColor: '#05050a', quality: 1, pixelRatio: 3 })
-        : await toSvg(element, { backgroundColor: '#05050a' });
+      const exportOptions = {
+        backgroundColor: "#05050a",
+        scale: format === "svg" ? 1.2 : 2, // SVG doesn't need high scale, PDF/PNG does
+        filter: (node: globalThis.Node) => {
+          if (node instanceof HTMLElement) {
+            // Exclude UI elements and buttons
+            if (node.tagName === "BUTTON") return false;
+            if (node.tagName === "FORM") return false;
+            if (node.classList.contains("react-flow__controls")) return false;
+            if (node.classList.contains("react-flow__panel")) return false;
+            if (node.classList.contains("react-flow__attribution")) return false;
+          }
+          return true;
+        },
+      };
 
-      const link = document.createElement("a");
-      link.download = `schema-${new Date().toISOString().slice(0, 10)}.${format}`;
-      link.href = dataUrl;
-      link.click();
+      if (format === "svg") {
+        // Export as SVG
+        const dataUrl = await domToSvg(element, exportOptions);
+        const link = document.createElement("a");
+        link.download = `schema-${new Date().toISOString().slice(0, 10)}.svg`;
+        link.href = dataUrl;
+        link.click();
+      } else if (format === "pdf") {
+        // Export as PDF (convert to PNG first, then add to PDF)
+        const dataUrl = await domToPng(element, exportOptions);
+        
+        // Create PDF
+        const pdf = new jsPDF({
+          orientation: "landscape",
+          unit: "mm",
+          format: "a4",
+        });
+
+        const imgWidth = 280; // A4 landscape width minus margins
+        const imgHeight = (imgWidth * element.clientHeight) / element.clientWidth;
+        
+        pdf.addImage(dataUrl, "PNG", 15, 15, imgWidth, imgHeight);
+        pdf.save(`schema-${new Date().toISOString().slice(0, 10)}.pdf`);
+      }
     } catch (err) {
       console.error("Export failed:", err);
     } finally {
@@ -229,7 +286,10 @@ function ERDiagramContent() {
   }, []);
 
   return (
-    <div ref={reactFlowWrapper} className="w-full h-full bg-background relative overflow-hidden">
+    <div
+      ref={reactFlowWrapper}
+      className="w-full h-full bg-background relative overflow-hidden"
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -246,7 +306,7 @@ function ERDiagramContent() {
         selectNodesOnDrag={true}
         selectionMode={SelectionMode.Full}
         defaultEdgeOptions={{
-          type: 'smoothstep',
+          type: "smoothstep",
           zIndex: 1000,
         }}
       >
@@ -257,13 +317,38 @@ function ERDiagramContent() {
             <div className="flex flex-col items-center gap-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-blue-500/30 blur-2xl animate-pulse" />
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-400/30 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-linear-to-br from-blue-500/20 to-cyan-500/10 border border-blue-400/30 flex items-center justify-center">
                   <div className="w-5 h-5 rounded-sm bg-blue-400/60 animate-pulse" />
                 </div>
               </div>
               <div className="flex flex-col items-center gap-1">
-                <span className="text-xs font-semibold text-white/80">Analyzing schema...</span>
-                <span className="text-[10px] font-medium text-white/40">AI processing in progress</span>
+                <span className="text-xs font-semibold text-white/80">
+                  Analyzing schema...
+                </span>
+                <span className="text-[10px] font-medium text-white/40">
+                  AI processing in progress
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isExporting && (
+          <div className="absolute inset-0 z-50 bg-[#05050a]/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-emerald-500/20 blur-2xl animate-pulse" />
+                <div className="w-12 h-12 rounded-xl bg-linear-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-400/20 flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-emerald-400/50 border-t-emerald-400 rounded-full animate-spin" />
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs font-semibold text-white/80">
+                  Generating Export...
+                </span>
+                <span className="text-[10px] font-medium text-white/40">
+                  Optimizing nodes and edges
+                </span>
               </div>
             </div>
           </div>
@@ -292,14 +377,29 @@ function ERDiagramContent() {
               size="sm"
               disabled={isExporting}
               className="gap-2 h-8 px-3 text-white/50 hover:text-white hover:bg-white/5 rounded-lg text-xs font-medium transition-all"
-              onClick={() => onExport('png')}
+              onClick={() => onExport("svg")}
+            >
+              {isExporting ? (
+                <div className="w-4 h-4 rounded-sm border-2 border-white/30 border-t-white animate-spin" />
+              ) : (
+                <FileText className="w-4 h-4" />
+              )}
+              SVG
+            </Button>
+            <div className="w-px h-5 bg-white/10 my-auto" />
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={isExporting}
+              className="gap-2 h-8 px-3 text-white/50 hover:text-white hover:bg-white/5 rounded-lg text-xs font-medium transition-all"
+              onClick={() => onExport("pdf")}
             >
               {isExporting ? (
                 <div className="w-4 h-4 rounded-sm border-2 border-white/30 border-t-white animate-spin" />
               ) : (
                 <Download className="w-4 h-4" />
               )}
-              Export
+              PDF
             </Button>
           </div>
         </Panel>
@@ -315,4 +415,3 @@ export function ERDiagram() {
     </ReactFlowProvider>
   );
 }
-

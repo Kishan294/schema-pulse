@@ -35,42 +35,44 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section id="docs" className="py-40 relative overflow-hidden bg-muted/30">
-      <div className="container mx-auto px-6 max-w-4xl">
-        <div className="text-center mb-24">
-          <h2 className="text-sm font-bold tracking-[0.4em] text-primary uppercase mb-6">
+    <section id="docs" className="py-32 relative overflow-hidden bg-[#0a0a0f]">
+      <div className="container mx-auto px-6 max-w-6xl">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-blue-400 mb-4">
             Support Knowledge
           </h2>
-          <h3 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
+          <h3 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
             Common Questions
           </h3>
-          <p className="text-white/40 text-lg font-medium">
+          <p className="text-white/50 text-lg font-medium">
             Everything you need to know about the platform architecture.
           </p>
         </div>
 
+        {/* FAQ Accordion */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="space-y-4"
+          className="space-y-3 mb-16 max-w-3xl mx-auto"
         >
-          <Accordion className="w-full space-y-4">
+          <Accordion className="w-full space-y-3">
             {faqs.map((faq, index) => (
               <AccordionItem
                 key={index}
                 value={`item-${index}`}
-                className="border border-white/5 bg-black/20 hover:bg-white/2 px-8 rounded-3xl transition-all duration-300 group overflow-hidden"
+                className="border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] px-6 rounded-xl transition-all duration-300 overflow-hidden"
               >
-                <AccordionTrigger className="text-left text-lg font-bold py-8 hover:no-underline group-hover:text-primary transition-colors tracking-tight">
-                  <div className="flex items-center gap-6">
-                    <span className="text-white/30 group-hover:text-primary transition-colors font-mono text-sm leading-none">
-                      0{index + 1}
+                <AccordionTrigger className="text-left text-base font-semibold py-5 hover:no-underline group-hover:text-blue-400 transition-colors tracking-tight">
+                  <div className="flex items-center gap-4">
+                    <span className="text-white/30 group-hover:text-blue-400 transition-colors font-mono text-xs">
+                      {index + 1}
                     </span>
                     {faq.question}
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="text-white/40 text-base leading-relaxed pb-8 pl-12 border-t border-white/5 pt-6">
+                <AccordionContent className="text-white/50 text-sm leading-relaxed pb-5 pl-9 border-t border-white/5 pt-4">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -78,16 +80,22 @@ export function FAQ() {
           </Accordion>
         </motion.div>
 
-        <div className="mt-20 flex justify-center">
-          <div className="bg-white/5 border border-white/10 p-8 rounded-[32px] flex flex-col md:flex-row items-center gap-8 backdrop-blur-xl">
-            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
-              <HelpCircle className="w-6 h-6 text-white" />
+        {/* Contact CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex justify-center"
+        >
+          <div className="bg-white/5 border border-white/10 p-6 rounded-2xl flex flex-col md:flex-row items-center gap-6 backdrop-blur-xl max-w-2xl">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+              <HelpCircle className="w-5 h-5 text-white" />
             </div>
-            <div className="text-center md:text-left">
-              <h4 className="font-bold text-white mb-2">
+            <div className="text-center md:text-left flex-1">
+              <h4 className="font-semibold text-white mb-1">
                 Still have questions?
               </h4>
-              <p className="text-sm text-white/40 font-medium">
+              <p className="text-xs text-white/50 font-medium">
                 Get in touch with our team for technical audits or enterprise
                 support.
               </p>
@@ -95,13 +103,13 @@ export function FAQ() {
             <Button
               size="lg"
               variant="secondary"
-              className="bg-white text-black hover:bg-white/90 font-bold px-8 rounded-xl h-12 flex gap-2"
+              className="bg-white text-black hover:bg-white/90 font-semibold px-6 rounded-lg h-10 flex gap-2"
             >
               Contact Sales
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

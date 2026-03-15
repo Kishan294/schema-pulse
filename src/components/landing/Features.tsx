@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Activity,
-  Database,
-  GitBranch,
-  LayoutGrid,
-  Sparkles,
-} from "lucide-react";
+import { Activity, Database, GitBranch, LayoutGrid, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 
 const features = [
@@ -38,53 +32,55 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" className="py-40 relative overflow-hidden">
-      <div className="container mx-auto px-6">
-        <div className="text-center max-w-3xl mx-auto mb-24">
+    <section id="features" className="py-32 relative overflow-hidden bg-[#05050a]">
+      <div className="container mx-auto px-6 max-w-6xl">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-20">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 mb-8"
           >
-            <Activity className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-primary">
+            <Activity className="w-3.5 h-3.5 text-blue-400" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">
               Core Intelligence
             </span>
           </motion.div>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
-            Architectural Clarity, <br /> At the speed of thought.
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
+            Architectural Clarity,{" "}
+            <br />
+            At the speed of thought.
           </h2>
-          <p className="text-white/40 text-lg font-medium leading-relaxed">
+          <p className="text-white/50 text-lg font-medium leading-relaxed">
             We removed the friction from database design. Focus on your business
             logic, not the drawing board.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Features Grid - Centered */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              whileHover={{ y: -5 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group p-8 rounded-3xl border border-white/5 bg-white/1 hover:bg-white/3 transition-all hover:border-primary/20 flex flex-col items-start gap-8"
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              className="group p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300"
             >
               <div
-                className={`w-12 h-12 rounded-xl ${feature.bg} flex items-center justify-center`}
+                className={`w-11 h-11 rounded-lg ${feature.bg} flex items-center justify-center mb-6`}
               >
-                <feature.icon className={`w-6 h-6 ${feature.color}`} />
+                <feature.icon className={`w-5 h-5 ${feature.color}`} />
               </div>
-              <div>
-                <h4 className="text-lg font-bold mb-4 text-white group-hover:text-primary transition-colors">
-                  {feature.title}
-                </h4>
-                <p className="text-sm text-white/40 leading-relaxed font-medium">
-                  {feature.description}
-                </p>
-              </div>
+              <h3 className="text-lg font-semibold mb-3 text-white group-hover:text-blue-400 transition-colors">
+                {feature.title}
+              </h3>
+              <p className="text-sm text-white/50 leading-relaxed">
+                {feature.description}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -94,40 +90,42 @@ export function Features() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-4 p-12 rounded-[40px] border border-white/5 bg-linear-to-br from-white/2 to-transparent flex flex-col lg:flex-row items-center justify-between gap-12 overflow-hidden relative"
+          className="mt-24 p-10 rounded-2xl border border-white/5 bg-gradient-to-br from-white/[0.03] to-transparent flex flex-col lg:flex-row items-center justify-between gap-10 overflow-hidden relative max-w-5xl mx-auto"
         >
-          <div className="max-w-xl relative z-10">
-            <h3 className="text-3xl font-bold mb-6">
+          <div className="max-w-xl">
+            <h3 className="text-2xl font-bold mb-4">
               Designed for real-world complexity
             </h3>
-            <p className="text-white/40 font-medium leading-relaxed mb-8 text-lg">
+            <p className="text-white/50 font-medium leading-relaxed mb-6">
               Whether you&apos;re managing 10 tables or 1,000, our engine uses
               advanced graph partitioning to keep your diagrams legible and
               interactive.
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3">
               {["PostgreSQL", "MySQL", "SQLite", "Prisma", "Drizzle"].map(
                 (tag) => (
                   <div
                     key={tag}
-                    className="px-4 py-1.5 rounded-full bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-widest text-white/40"
+                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[10px] font-medium uppercase tracking-wide text-white/40"
                   >
                     {tag}
                   </div>
-                ),
+                )
               )}
             </div>
           </div>
 
-          <div className="relative group lg:pr-20">
-            <div className="absolute -inset-20 bg-primary/20 blur-[100px] rounded-full opacity-50 -z-10 group-hover:opacity-80 transition-opacity" />
-            <div className="grid grid-cols-2 gap-4 scale-90 md:scale-100">
+          <div className="relative">
+            <div className="absolute -inset-16 bg-blue-500/10 blur-[80px] rounded-full opacity-40" />
+            <div className="grid grid-cols-2 gap-3 relative">
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className={`w-32 h-32 rounded-2xl border border-white/10 glass-card flex items-center justify-center ${i % 2 === 0 ? "mt-8" : ""}`}
+                  className={`w-20 h-20 rounded-xl border border-white/10 bg-white/[0.02] flex items-center justify-center ${
+                    i % 2 === 0 ? "mt-6" : ""
+                  }`}
                 >
-                  <Database className="w-8 h-8 text-white/20 group-hover:text-primary transition-colors" />
+                  <Database className="w-6 h-6 text-white/20 group-hover:text-blue-400 transition-colors" />
                 </div>
               ))}
             </div>
