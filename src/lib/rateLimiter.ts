@@ -9,7 +9,7 @@ interface RateLimitEntry {
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
 export const LIMITS = {
-  MAX_REQUESTS: 5,           // Max requests per window
+  MAX_REQUESTS: 10, // Max requests per window
   WINDOW_MS: 60 * 60 * 1000, // 1 hour window
 };
 

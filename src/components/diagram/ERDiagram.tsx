@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Cpu, Download, LayoutGrid } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
+import { Download, LayoutGrid } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ReactFlow,
   addEdge,
@@ -83,6 +83,7 @@ function ERDiagramContent() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { fitView } = useReactFlow();
+  const [isExporting, setIsExporting] = useState(false);
 
   const onConnect = useCallback(
     (params: Connection | Edge) => setEdges((eds) => addEdge(params, eds)),
@@ -210,17 +211,20 @@ function ERDiagramContent() {
     const element = reactFlowWrapper.current.querySelector('.react-flow__viewport') as HTMLElement;
     if (!element) return;
 
+    setIsExporting(true);
     try {
-      const dataUrl = format === 'png' 
-        ? await toPng(element, { backgroundColor: '#050505', quality: 1, pixelRatio: 2 })
-        : await toSvg(element, { backgroundColor: '#050505' });
-        
+      const dataUrl = format === 'png'
+        ? await toPng(element, { backgroundColor: '#05050a', quality: 1, pixelRatio: 3 })
+        : await toSvg(element, { backgroundColor: '#05050a' });
+
       const link = document.createElement("a");
-      link.download = `schema-pulse-export.${format}`;
+      link.download = `schema-${new Date().toISOString().slice(0, 10)}.${format}`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
       console.error("Export failed:", err);
+    } finally {
+      setIsExporting(false);
     }
   }, []);
 
@@ -246,18 +250,20 @@ function ERDiagramContent() {
           zIndex: 1000,
         }}
       >
-        <Background color="#111111" gap={32} size={1} />
-        
+        <Background color="#0f0f1a" gap={24} size={1} />
+
         {isAnalyzing && (
-          <div className="absolute inset-0 z-100 bg-background/60 backdrop-blur-md flex items-center justify-center">
-            <div className="flex flex-col items-center gap-6">
+          <div className="absolute inset-0 z-50 bg-[#05050a]/80 backdrop-blur-sm flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
               <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 blur-3xl animate-pulse" />
-                <Cpu className="w-16 h-16 text-primary animate-bounce" />
+                <div className="absolute inset-0 bg-blue-500/30 blur-2xl animate-pulse" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-400/30 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-sm bg-blue-400/60 animate-pulse" />
+                </div>
               </div>
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-sm font-black uppercase tracking-[0.5em] text-white">Synthesizing Schema</span>
-                <span className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">LPU processing in progress...</span>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs font-semibold text-white/80">Analyzing schema...</span>
+                <span className="text-[10px] font-medium text-white/40">AI processing in progress</span>
               </div>
             </div>
           </div>
@@ -265,50 +271,36 @@ function ERDiagramContent() {
 
         <Controls
           showInteractive={false}
-          className="bg-black/60! border-white/5! backdrop-blur-3xl! rounded-2xl! p-1.5! shadow-2xl! space-y-1.5!"
+          className="bg-[#0a0a0f]/90! border-white/5! backdrop-blur-xl! rounded-xl! p-1! shadow-2xl! gap-1!"
         />
 
-        <Panel position="top-right" className="flex gap-4 m-8">
-          <div className="flex bg-black/60 border border-white/10 backdrop-blur-3xl rounded-2xl p-1.5 shadow-2xl transition-all hover:border-white/20">
+        <Panel position="top-right" className="flex gap-2 m-4">
+          <div className="flex bg-[#0a0a0f]/90 border border-white/5 backdrop-blur-xl rounded-xl p-1 shadow-xl">
             <Button
               variant="ghost"
               size="sm"
-              className="gap-2.5 h-10 px-5 text-white/50 hover:text-white hover:bg-white/5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all"
-              onClick={() => fitView({ duration: 800, padding: 0.2 })}
+              disabled={isExporting}
+              className="gap-2 h-8 px-3 text-white/50 hover:text-white hover:bg-white/5 rounded-lg text-xs font-medium transition-all"
+              onClick={() => fitView({ duration: 600, padding: 0.25 })}
             >
               <LayoutGrid className="w-4 h-4" />
-              Auto Layout
+              Fit View
             </Button>
-            <div className="w-px h-6 bg-white/10 my-auto mx-1.5" />
+            <div className="w-px h-5 bg-white/10 my-auto" />
             <Button
               variant="ghost"
               size="sm"
-              className="gap-2.5 h-10 px-5 text-white/50 hover:text-white hover:bg-white/5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all"
+              disabled={isExporting}
+              className="gap-2 h-8 px-3 text-white/50 hover:text-white hover:bg-white/5 rounded-lg text-xs font-medium transition-all"
               onClick={() => onExport('png')}
             >
-              <Download className="w-4 h-4" />
-              Snapshot
+              {isExporting ? (
+                <div className="w-4 h-4 rounded-sm border-2 border-white/30 border-t-white animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              Export
             </Button>
-          </div>
-        </Panel>
-
-
-        <Panel position="bottom-left" className="m-10 flex items-center gap-5">
-          <div className="px-6 py-3.5 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-3xl flex items-center gap-4 hover:border-primary/30 transition-colors cursor-help">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
-              <Cpu className="w-4 h-4 text-primary" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] leading-none mb-1.5">
-                System Status
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-white tracking-tight">
-                  LPU V1.2
-                </span>
-                <span className="text-[8px] font-bold bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded uppercase tracking-tighter">Operational</span>
-              </div>
-            </div>
           </div>
         </Panel>
       </ReactFlow>

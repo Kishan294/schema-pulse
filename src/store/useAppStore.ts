@@ -1,20 +1,21 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { type Node, type Edge } from "@xyflow/react";
 
 interface AnalysisResult {
   explanation: string;
-  entities: { 
-    name: string; 
-    description: string; 
-    columns: { name: string; type: string; isPrimary: boolean }[] 
+  entities: {
+    name: string;
+    description: string;
+    columns: { name: string; type: string; isPrimary: boolean }[]
   }[];
-  relationships: { 
-    from: string; 
-    to: string; 
+  relationships: {
+    from: string;
+    to: string;
     fromColumn?: string;
     toColumn?: string;
-    type: string; 
-    description: string 
+    type: string;
+    description: string
   }[];
   optimizations: string[];
   smells: string[];
@@ -33,10 +34,11 @@ interface AppState {
   setAnalysis: (analysis: AnalysisResult) => void;
   isAnalyzing: boolean;
   setIsAnalyzing: (status: boolean) => void;
+  lastSaved: Date | null;
+  setLastSaved: (date: Date) => void;
 }
 
-export const useAppStore = create<AppState>((set) => ({
-  schema: `-- Initial Schema Example
+const defaultSchema = `-- Initial Schema Example
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
@@ -48,16 +50,35 @@ CREATE TABLE orders (
   user_id INT REFERENCES users(id),
   total DECIMAL(10, 2),
   status VARCHAR(50)
-);`,
-  setSchema: (schema: string) => set({ schema }),
-  schemaType: "SQL",
-  setSchemaType: (type: string) => set({ schemaType: type }),
-  nodes: [],
-  setNodes: (nodes: Node[]) => set({ nodes }),
-  edges: [],
-  setEdges: (edges: Edge[]) => set({ edges }),
-  analysis: null,
-  setAnalysis: (analysis: AnalysisResult) => set({ analysis }),
-  isAnalyzing: false,
-  setIsAnalyzing: (isAnalyzing: boolean) => set({ isAnalyzing }),
-}));
+);`;
+
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
+      schema: defaultSchema,
+      setSchema: (schema: string) => set({ schema, lastSaved: new Date() }),
+      schemaType: "SQL",
+      setSchemaType: (type: string) => set({ schemaType: type }),
+      nodes: [],
+      setNodes: (nodes: Node[]) => set({ nodes }),
+      edges: [],
+      setEdges: (edges: Edge[]) => set({ edges }),
+      analysis: null,
+      setAnalysis: (analysis: AnalysisResult) => set({ analysis }),
+      isAnalyzing: false,
+      setIsAnalyzing: (isAnalyzing: boolean) => set({ isAnalyzing }),
+      lastSaved: null,
+      setLastSaved: (date: Date) => set({ lastSaved: date }),
+    }),
+    {
+      name: "schema-pulse-storage",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        schema: state.schema,
+        schemaType: state.schemaType,
+        nodes: state.nodes,
+        edges: state.edges,
+      }),
+    }
+  )
+);

@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/store/useAppStore";
 import Editor from "@monaco-editor/react";
-import { Cpu, Loader2, AlertCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Cpu, Loader2, RotateCcw, RotateCw } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 interface RateLimitInfo {
   remaining: number;
@@ -20,10 +20,24 @@ export function SchemaEditor() {
     isAnalyzing,
     setIsAnalyzing,
     setAnalysis,
+    lastSaved,
+    setNodes,
+    setEdges,
   } = useAppStore();
 
   const [rateLimit, setRateLimit] = useState<RateLimitInfo | null>(null);
   const [countdown, setCountdown] = useState<string>("");
+
+  // Undo/redo history
+  const [history, setHistory] = useState({
+    past: [] as string[],
+    present: schema,
+    future: [] as string[],
+  });
+
+  useEffect(() => {
+    setHistory((h) => ({ ...h, present: schema }));
+  }, [schema]);
 
   useEffect(() => {
     fetchRateLimit();
@@ -49,6 +63,83 @@ export function SchemaEditor() {
     }
   }, [rateLimit]);
 
+  // Undo/Redo handlers
+  const handleUndo = useCallback(() => {
+    setHistory((h) => {
+      if (h.past.length === 0) return h;
+      const previous = h.past[h.past.length - 1];
+      const newPast = h.past.slice(0, -1);
+      setSchema(previous);
+      return {
+        past: newPast,
+        present: previous,
+        future: [h.present, ...h.future],
+      };
+    });
+  }, []);
+
+  const handleRedo = useCallback(() => {
+    setHistory((h) => {
+      if (h.future.length === 0) return h;
+      const next = h.future[0];
+      const newFuture = h.future.slice(1);
+      setSchema(next);
+      return {
+        past: [...h.past, h.present],
+        present: next,
+        future: newFuture,
+      };
+    });
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMod = e.ctrlKey || e.metaKey;
+
+      if (document.activeElement?.classList.contains("monaco-editor")) {
+        return;
+      }
+
+      if (isMod) {
+        switch (e.key.toLowerCase()) {
+          case "z":
+            e.preventDefault();
+            if (e.shiftKey) {
+              handleRedo();
+            } else {
+              handleUndo();
+            }
+            break;
+          case "y":
+            e.preventDefault();
+            handleRedo();
+            break;
+          case "Enter":
+            e.preventDefault();
+            handleAnalyze();
+            break;
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleUndo, handleRedo]);
+
+  // Update history when schema changes
+  const handleSchemaChange = useCallback(
+    (value: string | undefined) => {
+      setHistory((h) => ({
+        past: [...h.past, h.present],
+        present: value || "",
+        future: [],
+      }));
+      setSchema(value || "");
+    },
+    [setSchema],
+  );
+
   const fetchRateLimit = async () => {
     try {
       const response = await fetch("/api/ai/analyze", { method: "HEAD" });
@@ -68,6 +159,10 @@ export function SchemaEditor() {
   };
 
   const handleAnalyze = async () => {
+    if (!rateLimit || rateLimit.remaining <= 0) {
+      return;
+    }
+
     setIsAnalyzing(true);
     try {
       const response = await fetch("/api/ai/analyze", {
@@ -80,144 +175,181 @@ export function SchemaEditor() {
       fetchRateLimit();
     } catch (error) {
       console.error("Analysis failed:", error);
-      const errorMessage = error instanceof Error ? error.message : "Analysis failed. Please check your API configuration.";
-      alert(errorMessage);
     } finally {
       setIsAnalyzing(false);
     }
   };
 
+  const isLimitExhausted = rateLimit && rateLimit.remaining === 0;
+  const lines = schema.split("\n").length;
+  const chars = schema.length;
+
   return (
-    <div className="h-full flex flex-col bg-transparent">
-      <div className="flex flex-col gap-4 p-8 border-b border-white/5 bg-linear-to-b from-white/2 to-transparent">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
-              <span className="text-[12px] font-black uppercase tracking-[0.2em] text-white">
-                Data Blueprint
-              </span>
-            </div>
-            <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
-              Schema Engine v1.2
+    <div className="h-full flex flex-col bg-[#09090b]">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="text-xs font-medium text-white/80">
+              Schema Editor
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            {rateLimit && rateLimit.remaining <= 2 && rateLimit.remaining > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
-                <span className="text-[9px] font-bold text-amber-500 uppercase tracking-wider">
-                  {rateLimit.remaining} AI left
-                </span>
-              </div>
-            )}
-            {rateLimit && rateLimit.remaining === 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
-                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
-                <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider">
-                  Reset in {countdown}
-                </span>
-              </div>
-            )}
-            <Button
-              size="sm"
-              className={`h-10 gap-3 text-[11px] font-black uppercase tracking-widest transition-all rounded-xl px-6 border ${
-                isAnalyzing
-                  ? "bg-primary/20 text-primary border-primary/20"
-                  : rateLimit && rateLimit.remaining === 0
-                    ? "bg-white/5 text-white/20 border-white/5 cursor-not-allowed"
-                    : "bg-primary text-white hover:bg-primary/90 border-primary/20 shadow-[0_10px_30px_rgba(59,130,246,0.3)] active:scale-95"
-              }`}
-              onClick={handleAnalyze}
-              disabled={isAnalyzing || !!(rateLimit && rateLimit.remaining === 0)}
+          <div className="h-4 w-px bg-white/10" />
+
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={handleUndo}
+              disabled={history.past.length === 0}
+              className="p-1.5 rounded-md hover:bg-white/5 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              title="Undo (Ctrl+Z)"
             >
-              {isAnalyzing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Cpu className="w-4 h-4" />
-              )}
-              {isAnalyzing ? "Processing..." : rateLimit && rateLimit.remaining === 0 ? "Limit Reached" : "Visualize Blueprint"}
-            </Button>
+              <RotateCcw className="w-4 h-4 text-white/50" />
+            </button>
+            <button
+              onClick={handleRedo}
+              disabled={history.future.length === 0}
+              className="p-1.5 rounded-md hover:bg-white/5 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              title="Redo (Ctrl+Y)"
+            >
+              <RotateCw className="w-4 h-4 text-white/50" />
+            </button>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Rate Limit */}
+          {rateLimit && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5">
+              <span className="text-xs font-medium text-white/60">
+                {rateLimit.remaining}/{rateLimit.limit}
+              </span>
+              <span className="text-[10px] font-medium text-white/40 uppercase">
+                AI
+              </span>
+            </div>
+          )}
+
+          <Button
+            size="sm"
+            disabled={isAnalyzing || !!isLimitExhausted}
+            onClick={handleAnalyze}
+            className={`h-8 px-4 gap-2 rounded-lg text-xs font-medium transition-all ${
+              isAnalyzing
+                ? "bg-blue-500/20 text-blue-400"
+                : isLimitExhausted
+                  ? "bg-white/5 text-white/20 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25"
+            }`}
+          >
+            {isAnalyzing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Cpu className="w-4 h-4" />
+            )}
+            {isAnalyzing
+              ? "Analyzing..."
+              : isLimitExhausted
+                ? "Limit Reached"
+                : "Analyze"}
+          </Button>
         </div>
       </div>
 
-      <div className="grow relative overflow-hidden flex flex-col">
+      {/* Editor */}
+      <div className="grow relative overflow-hidden">
         <Editor
           height="100%"
           defaultLanguage="sql"
           theme="vs-dark"
           value={schema}
-          onChange={(value) => setSchema(value || "")}
+          onChange={handleSchemaChange}
           options={{
             minimap: { enabled: false },
-            fontSize: 14,
+            fontSize: 13,
             lineNumbers: "on",
             roundedSelection: true,
             scrollBeyondLastLine: false,
             readOnly: isAnalyzing,
             automaticLayout: true,
-            padding: { top: 32, bottom: 32 },
-            fontFamily: "'Source Code Pro', var(--font-source-code-pro), monospace",
+            padding: { top: 16, bottom: 48 },
+            fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+            fontLigatures: true,
             cursorStyle: "line",
-            lineHeight: 24,
-            fontWeight: "500",
-            letterSpacing: -0.1,
+            lineHeight: 21,
+            fontWeight: "400",
+            letterSpacing: 0,
             scrollbar: {
-              verticalScrollbarSize: 4,
-              horizontalScrollbarSize: 4,
+              verticalScrollbarSize: 8,
+              horizontalScrollbarSize: 8,
+              useShadows: false,
             },
             renderLineHighlight: "all",
             lineDecorationsWidth: 0,
-            lineNumbersMinChars: 3,
+            lineNumbersMinChars: 4,
             glyphMargin: false,
-            folding: false,
+            folding: true,
             hideCursorInOverviewRuler: true,
+            overviewRulerBorder: false,
+            smoothScrolling: true,
+            cursorSmoothCaretAnimation: "on",
           }}
           beforeMount={(monaco) => {
-            monaco.editor.defineTheme("blueprintDark", {
+            monaco.editor.defineTheme("schema-dark", {
               base: "vs-dark",
               inherit: true,
               rules: [
                 { token: "keyword", foreground: "3b82f6", fontStyle: "bold" },
-                { token: "type", foreground: "06b6d4" },
-                { token: "string", foreground: "94a3b8" },
-                { token: "comment", foreground: "334155", fontStyle: "italic" },
-                { token: "operator", foreground: "3b82f6" },
+                { token: "keyword.create", foreground: "60a5fa" },
+                { token: "keyword.table", foreground: "60a5fa" },
+                { token: "type", foreground: "22d3ee" },
+                { token: "identifier", foreground: "e2e8f0" },
+                { token: "string", foreground: "a78bfa" },
+                { token: "comment", foreground: "475569", fontStyle: "italic" },
+                { token: "operator", foreground: "94a3b8" },
+                { token: "delimiter.parenthesis", foreground: "64748b" },
+                { token: "number", foreground: "fbbf24" },
+                { token: "keyword.default", foreground: "f472b6" },
               ],
               colors: {
-                "editor.background": "#050505",
-                "editorLineNumber.foreground": "#1e293b",
+                "editor.background": "#09090b",
+                "editorLineNumber.foreground": "#27272a",
                 "editorLineNumber.activeForeground": "#3b82f6",
-                "editor.selectionBackground": "#3b82f640",
-                "editor.inactiveSelectionBackground": "#3b82f620",
-                "editor.lineHighlightBackground": "#ffffff05",
+                "editor.selectionBackground": "#3b82f620",
+                "editor.inactiveSelectionBackground": "#3b82f610",
+                "editor.lineHighlightBackground": "#18181b",
                 "editorCursor.foreground": "#3b82f6",
-                "editor.selectionHighlightBackground": "#3b82f630",
+                "editor.selectionHighlightBackground": "#3b82f615",
+                "editorIndentGuide.background": "#27272a",
+                "editorIndentGuide.activeBackground": "#3f3f46",
               },
             });
           }}
           onMount={(editor) => {
-            editor.updateOptions({ theme: "blueprintDark" });
+            editor.updateOptions({ theme: "schema-dark" });
           }}
         />
 
-        {/* Footer Info */}
-        <div className="absolute bottom-0 inset-x-0 h-8 border-t border-white/5 bg-black/40 backdrop-blur-xl flex items-center justify-between px-6 z-10">
-          <div className="text-[9px] font-bold font-mono text-white/10 uppercase tracking-widest leading-none">
-            Lines: {schema.split("\n").length}
+        {/* Footer */}
+        <div className="absolute bottom-0 inset-x-0 h-8 border-t border-white/5 bg-[#09090b] flex items-center justify-between px-4 z-10">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-medium text-white/40">
+              {lines} lines
+            </span>
+            <span className="text-[10px] font-medium text-white/40">
+              {chars} chars
+            </span>
           </div>
-          <div className="flex items-center gap-4">
-            {rateLimit && (
-              <div className="flex items-center gap-1.5 text-[9px] font-bold font-mono uppercase tracking-widest leading-none">
-                <div className={`w-1.5 h-1.5 rounded-full ${rateLimit.remaining <= 2 ? 'bg-amber-500' : 'bg-primary/40'} animate-pulse`} />
-                AI: {rateLimit.remaining}/{rateLimit.limit}
-              </div>
-            )}
-            <div className="text-[9px] font-bold font-mono text-white/10 uppercase tracking-widest leading-none">
-              Groq-Llama-3.3
-            </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-medium text-white/30 uppercase tracking-wide">
+              SQL
+            </span>
+            <div className="w-px h-3 bg-white/10" />
+            <span className="text-[10px] font-medium text-blue-400/70 uppercase tracking-wide">
+              Groq AI
+            </span>
           </div>
         </div>
       </div>
