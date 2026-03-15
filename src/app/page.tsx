@@ -1,6 +1,7 @@
 "use client";
 
 import { Hero } from "@/components/landing/Hero";
+import { Navbar } from "@/components/landing/Navbar";
 import { Features } from "@/components/landing/Features";
 import { FAQ } from "@/components/landing/FAQ";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { motion } from "motion/react";
 export default function Home() {
   return (
     <div className="relative min-h-screen flex flex-col font-sans antialiased overflow-x-hidden bg-[#05050a]">
+      <Navbar />
       <main className="grow">
         <Hero />
 
@@ -50,7 +52,7 @@ export default function Home() {
         {/* Final CTA Section */}
         <section className="py-32 relative overflow-hidden bg-[#05050a]">
           <div className="container mx-auto px-6 max-w-6xl">
-            <div className="relative rounded-[32px] border border-white/10 bg-gradient-to-b from-blue-500/10 to-transparent p-12 md:p-20 overflow-hidden text-center">
+            <div className="relative rounded-[32px] border border-white/10 bg-linear-to-b from-blue-500/10 to-transparent p-12 md:p-20 overflow-hidden text-center">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[250px] bg-blue-500/20 blur-[120px] -z-10 rounded-full" />
 
               <motion.div

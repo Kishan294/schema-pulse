@@ -237,18 +237,19 @@ function ERDiagramContent() {
     if (!element) return;
 
     setIsExporting(true);
+    element.classList.add("exporting");
+
     try {
+      // Give the browser a moment to apply the .exporting styles (hide blurs, shadows)
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
       const exportOptions = {
         backgroundColor: "#05050a",
-        scale: format === "svg" ? 1.2 : 2, // SVG doesn't need high scale, PDF/PNG does
+        scale: format === "svg" ? 1 : 1.5, // Lower scale for performance, still high quality
+        // Simplified filter as the .exporting class handles most hiding via CSS
         filter: (node: globalThis.Node) => {
           if (node instanceof HTMLElement) {
-            // Exclude UI elements and buttons
             if (node.tagName === "BUTTON" || node.tagName === "FORM") return false;
-            if (node.classList.contains("react-flow__controls")) return false;
-            if (node.classList.contains("react-flow__panel")) return false;
-            // Explicitly exclude the attribution (watermark) if desired
-            if (node.classList.contains("react-flow__attribution")) return false;
           }
           return true;
         },
@@ -275,12 +276,16 @@ function ERDiagramContent() {
         const imgWidth = 280; // A4 landscape width minus margins
         const imgHeight = (imgWidth * element.clientHeight) / element.clientWidth;
         
-        pdf.addImage(dataUrl, "PNG", 15, 15, imgWidth, imgHeight);
+        // Ensure image fits on page
+        const finalHeight = imgHeight > 190 ? 190 : imgHeight;
+        
+        pdf.addImage(dataUrl, "PNG", 15, 15, imgWidth, finalHeight);
         pdf.save(`schema-${new Date().toISOString().slice(0, 10)}.pdf`);
       }
     } catch (err) {
       console.error("Export failed:", err);
     } finally {
+      element.classList.remove("exporting");
       setIsExporting(false);
     }
   }, []);

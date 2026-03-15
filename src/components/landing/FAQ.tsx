@@ -6,9 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { HelpCircle, ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
-import { Button } from "../ui/button";
 
 const faqs = [
   {
@@ -62,7 +60,7 @@ export function FAQ() {
               <AccordionItem
                 key={index}
                 value={`item-${index}`}
-                className="border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] px-6 rounded-xl transition-all duration-300 overflow-hidden"
+                className="border border-white/5 bg-white/2 hover:bg-white/4 px-6 rounded-xl transition-all duration-300 overflow-hidden"
               >
                 <AccordionTrigger className="text-left text-base font-semibold py-5 hover:no-underline group-hover:text-blue-400 transition-colors tracking-tight">
                   <div className="flex items-center gap-4">
@@ -80,36 +78,6 @@ export function FAQ() {
           </Accordion>
         </motion.div>
 
-        {/* Contact CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex justify-center"
-        >
-          <div className="bg-white/5 border border-white/10 p-6 rounded-2xl flex flex-col md:flex-row items-center gap-6 backdrop-blur-xl max-w-2xl">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <HelpCircle className="w-5 h-5 text-white" />
-            </div>
-            <div className="text-center md:text-left flex-1">
-              <h4 className="font-semibold text-white mb-1">
-                Still have questions?
-              </h4>
-              <p className="text-xs text-white/50 font-medium">
-                Get in touch with our team for technical audits or enterprise
-                support.
-              </p>
-            </div>
-            <Button
-              size="lg"
-              variant="secondary"
-              className="bg-white text-black hover:bg-white/90 font-semibold px-6 rounded-lg h-10 flex gap-2"
-            >
-              Contact Sales
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </motion.div>
       </div>
     </section>
   );

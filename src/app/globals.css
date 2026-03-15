@@ -194,3 +194,35 @@
   background: rgba(255, 255, 255, 0.08) !important;
   fill: #fff !important;
 }
+
+/* Export Optimization */
+.exporting .react-flow__background {
+  opacity: 0.2 !important;
+}
+
+.exporting .glass,
+.exporting .glass-card,
+.exporting .backdrop-blur-xl,
+.exporting .backdrop-blur-2xl,
+.exporting [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  filter: none !important;
+  background-color: rgba(10, 10, 10, 0.98) !important;
+}
+
+.exporting * {
+  animation: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.exporting .react-flow__edge-path {
+  filter: none !important;
+}
+
+.exporting .react-flow__controls,
+.exporting .react-flow__panel,
+.exporting .react-flow__attribution {
+  display: none !important;
+}

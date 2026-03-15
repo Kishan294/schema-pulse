@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SchemaPulse - AI-Powered ER Diagram Generator
 
-## Getting Started
+SchemaPulse is a modern, high-performance ER diagram generator that uses AI to analyze database schemas and visualize relationships with stunning aesthetics.
 
-First, run the development server:
+## 🚀 Features
+
+- **AI Analysis**: Automatically detect entities, columns, and relationships from SQL or schema descriptions.
+- **Dynamic Visualization**: Interactive ER diagrams powered by `@xyflow/react` (React Flow).
+- **Pro Design**: Beautiful dark-mode interface with glassmorphism, smooth animations, and curated color palettes.
+- **Export Capabilities**: Export your diagrams as high-resolution SVG or PDF files.
+- **Interactive Editor**: Edit your schema in real-time with a built-in code editor.
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+- **Diagram Library**: [@xyflow/react](https://reactflow.dev/)
+- **UI Components**: [Shadcn UI](https://ui.shadcn.com/) & [Tailwind CSS](https://tailwindcss.com/)
+- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/)
+- **AI Integration**: Groq SDK
+- **Export**: `modern-screenshot` & `jspdf`
+
+## 📦 Getting Started
+
+First, install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+```
+
+Then, run the development server:
+
+```bash
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📄 Exporting
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+SchemaPulse provides high-resolution exports. For large diagrams, the export process is optimized to handle complex node structures and relationships.
 
-## Learn More
+## 🗺️ Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app`: Next.js pages and layout.
+- `src/components`: Reusable UI components and diagram-specific logic.
+- `src/lib`: Utility functions and third-party integrations (Groq, SQL Parser).
+- `src/store`: Global state management with Zustand.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📜 License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Created by [Kishan](https://github.com/Kishan294). Built for the modern web.
