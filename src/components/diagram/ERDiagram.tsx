@@ -1,30 +1,41 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Download, LayoutGrid, FileText } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useAppStore } from "@/store/useAppStore";
 import {
-  ReactFlow,
   addEdge,
   Background,
   type Connection,
+  ConnectionLineType,
   Controls,
   type Edge,
-  type Node as RFNode,
+  MarkerType,
   Panel,
+  ReactFlow,
+  ReactFlowProvider,
+  type Node as RFNode,
+  SelectionMode,
   useEdgesState,
   useNodesState,
   useReactFlow,
-  ReactFlowProvider,
-  ConnectionLineType,
-  MarkerType,
-  SelectionMode,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { TableNode } from "./TableNode";
-import { useAppStore } from "@/store/useAppStore";
-import { domToSvg, domToPng } from "modern-screenshot";
 import jsPDF from "jspdf";
+import { Download, LayoutGrid } from "lucide-react";
+import { domToPng, domToSvg } from "modern-screenshot";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import { TDocumentDefinitions } from "pdfmake/interfaces";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { TableNode } from "./TableNode";
+
+// Initialize pdfMake fonts
+if (typeof window !== "undefined") {
+  (pdfMake as any).vfs = (pdfFonts as any).pdfMake
+    ? (pdfFonts as any).pdfMake.vfs
+    : (pdfFonts as any).vfs;
+}
 
 const nodeTypes = {
   tableNode: TableNode,
@@ -231,188 +242,338 @@ function ERDiagramContent() {
     }
   }, [analysis, setNodes, setEdges, fitView]);
 
-  const onExport = useCallback(async (format: "pdf" | "svg") => {
-    if (reactFlowWrapper.current === null) return;
-    const element = reactFlowWrapper.current;
-    if (!element) return;
-
-    setIsExporting(true);
-    element.classList.add("exporting");
-
-    try {
-      // Give the browser a moment to apply the .exporting styles (hide blurs, shadows)
-      await new Promise((resolve) => setTimeout(resolve, 150));
-
-      const exportOptions = {
-        backgroundColor: "#05050a",
-        scale: format === "svg" ? 1 : 1.5, // Lower scale for performance, still high quality
-        // Simplified filter as the .exporting class handles most hiding via CSS
-        filter: (node: globalThis.Node) => {
-          if (node instanceof HTMLElement) {
-            if (node.tagName === "BUTTON" || node.tagName === "FORM") return false;
-          }
-          return true;
-        },
-      };
-
-      if (format === "svg") {
-        // Export as SVG
-        const dataUrl = await domToSvg(element, exportOptions);
-        const link = document.createElement("a");
-        link.download = `schema-${new Date().toISOString().slice(0, 10)}.svg`;
-        link.href = dataUrl;
-        link.click();
-      } else if (format === "pdf") {
-        // Export as PDF (convert to PNG first, then add to PDF)
-        const dataUrl = await domToPng(element, exportOptions);
-        
-        // Create PDF
-        const pdf = new jsPDF({
-          orientation: "landscape",
-          unit: "mm",
-          format: "a4",
-        });
-
-        const imgWidth = 280; // A4 landscape width minus margins
-        const imgHeight = (imgWidth * element.clientHeight) / element.clientWidth;
-        
-        // Ensure image fits on page
-        const finalHeight = imgHeight > 190 ? 190 : imgHeight;
-        
-        pdf.addImage(dataUrl, "PNG", 15, 15, imgWidth, finalHeight);
-        pdf.save(`schema-${new Date().toISOString().slice(0, 10)}.pdf`);
+  const onExport = useCallback(
+    async (format: "pdf" | "svg" | "png" | "pro-pdf") => {
+      // Target the actual ReactFlow viewport container for the most reliable capture
+      const element = reactFlowWrapper.current?.querySelector(
+        ".react-flow",
+      ) as HTMLElement;
+      if (!element) {
+        console.error("Export failed: ReactFlow element not found");
+        return;
       }
-    } catch (err) {
-      console.error("Export failed:", err);
-    } finally {
-      element.classList.remove("exporting");
-      setIsExporting(false);
-    }
-  }, []);
+
+      setIsExporting(true);
+      element.classList.add("exporting");
+
+      try {
+        // 1. Give the browser more time to apply styles and settle layout
+        // A slightly longer delay ensures that 'exporting' class styles are fully painted
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        const exportOptions = {
+          backgroundColor: "#05050a",
+          scale: 2, // 2x is a safe middle ground for high quality without crashing canvas memory
+          quality: 1,
+          // Remove complex filter to prevent potential blank exports
+        };
+
+        if (format === "svg") {
+          const dataUrl = await domToSvg(element, exportOptions);
+          const link = document.createElement("a");
+          link.download = `schema-${new Date().toISOString().slice(0, 10)}.svg`;
+          link.href = dataUrl;
+          link.click();
+        } else if (format === "png") {
+          const dataUrl = await domToPng(element, exportOptions);
+          const link = document.createElement("a");
+          link.download = `schema-${new Date().toISOString().slice(0, 10)}.png`;
+          link.href = dataUrl;
+          link.click();
+        } else if (format === "pdf") {
+          // Standard PDF capture
+          const dataUrl = await domToPng(element, exportOptions);
+          const pdf = new jsPDF({
+            orientation: "landscape",
+            unit: "mm",
+            format: "a4",
+            compress: true,
+          });
+
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+
+          // Add centered image
+          pdf.addImage(
+            dataUrl,
+            "PNG",
+            10,
+            10,
+            pdfWidth - 20,
+            pdfHeight - 20,
+            undefined,
+            "SLOW",
+          );
+          pdf.save(`schema-${new Date().toISOString().slice(0, 10)}.pdf`);
+        } else if (format === "pro-pdf") {
+          // Professional PDF using pdfmake
+          const dataUrl = await domToPng(element, exportOptions);
+
+          const docDefinition: TDocumentDefinitions = {
+            pageSize: "A4",
+            pageOrientation: "landscape",
+            pageMargins: [40, 40, 40, 40],
+            content: [
+              { text: "DATABASE ARCHITECTURE REPORT", style: "mainHeader" },
+              {
+                text: `System Generated • ${new Date().toLocaleDateString()}`,
+                style: "subHeader",
+              },
+              { text: "\n\n" },
+
+              { text: "1. ER DIAGRAM OVERVIEW", style: "sectionHeader" },
+              {
+                image: dataUrl,
+                width: 720,
+                alignment: "center",
+              },
+              { text: "\n\n" },
+
+              { text: "2. SCHEMA ANALYSIS", style: "sectionHeader" },
+              {
+                text: analysis?.explanation || "No logical overview provided.",
+                style: "bodyText",
+              },
+              { text: "\n" },
+
+              { text: "3. ENTITY DEFINITIONS", style: "sectionHeader" },
+              ...(analysis?.entities?.map((ent) => [
+                { text: ent.name, style: "entityHeader" },
+                {
+                  text: ent.description || "No description available.",
+                  style: "bodySmall",
+                  margin: [0, 0, 0, 5] as [number, number, number, number],
+                },
+                {
+                  table: {
+                    headerRows: 1,
+                    widths: ["*", "auto", "auto"],
+                    body: [
+                      [
+                        { text: "Column", style: "tableHeader" },
+                        { text: "Type", style: "tableHeader" },
+                        { text: "Constraints", style: "tableHeader" },
+                      ],
+                      ...ent.columns.map((col) => [
+                        { text: col.name, style: "tableCell" },
+                        { text: col.type, style: "tableCell" },
+                        {
+                          text: col.isPrimary ? "PRIMARY KEY" : "-",
+                          style: "tableCell",
+                          color: col.isPrimary ? "#3b82f6" : "#999",
+                        },
+                      ]),
+                    ],
+                  },
+                  layout: "lightHorizontalLines",
+                  margin: [0, 5, 0, 15] as [number, number, number, number],
+                },
+              ]) || []),
+
+              { text: "\n" },
+              { text: "4. DESIGN RECOMMENDATIONS", style: "sectionHeader" },
+              {
+                ul: analysis?.optimizations.map((opt) => ({
+                  text: opt,
+                  style: "bodyText",
+                  margin: [0, 2, 0, 2],
+                })) || ["No recommendations found."],
+              },
+            ],
+            styles: {
+              mainHeader: {
+                fontSize: 22,
+                bold: true,
+                color: "#3b82f6",
+                characterSpacing: 1,
+              },
+              subHeader: {
+                fontSize: 9,
+                color: "#999999",
+                margin: [0, 0, 0, 20],
+              },
+              sectionHeader: {
+                fontSize: 14,
+                bold: true,
+                color: "#111111",
+                margin: [0, 15, 0, 10],
+                decoration: "underline",
+              },
+              entityHeader: {
+                fontSize: 13,
+                bold: true,
+                color: "#3b82f6",
+                margin: [0, 10, 0, 2],
+              },
+              bodyText: { fontSize: 10, lineHeight: 1.4, color: "#333333" },
+              bodySmall: { fontSize: 8, color: "#666666", italics: true },
+              tableHeader: {
+                fontSize: 9,
+                bold: true,
+                fillColor: "#f8fafc",
+                margin: [5, 3, 5, 3],
+              },
+              tableCell: { fontSize: 9, margin: [5, 3, 5, 3] },
+            },
+            defaultStyle: {
+              font: "Roboto",
+            },
+          };
+
+          pdfMake
+            .createPdf(docDefinition)
+            .download(
+              `schema-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+            );
+        }
+      } catch (err) {
+        console.error("Export failed:", err);
+      } finally {
+        element.classList.remove("exporting");
+        setIsExporting(false);
+      }
+    },
+    [analysis],
+  );
 
   return (
     <div className="w-full h-full bg-background relative overflow-hidden">
-      <div
-        ref={reactFlowWrapper}
-        className="w-full h-full flex flex-col"
-      >
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        nodeTypes={nodeTypes}
-        fitView
-        connectionLineType={ConnectionLineType.SmoothStep}
-        className="bg-dot-pattern"
-        minZoom={0.05}
-        maxZoom={4}
-        elevateEdgesOnSelect={true}
-        selectNodesOnDrag={true}
-        selectionMode={SelectionMode.Full}
-        defaultEdgeOptions={{
-          type: "smoothstep",
-          zIndex: 1000,
-        }}
-      >
-        <Background color="#0f0f1a" gap={24} size={1} />
+      <div ref={reactFlowWrapper} className="w-full h-full flex flex-col">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          fitView
+          connectionLineType={ConnectionLineType.SmoothStep}
+          className="bg-dot-pattern"
+          minZoom={0.05}
+          maxZoom={4}
+          elevateEdgesOnSelect={true}
+          selectNodesOnDrag={true}
+          selectionMode={SelectionMode.Full}
+          defaultEdgeOptions={{
+            type: "smoothstep",
+            zIndex: 1000,
+          }}
+        >
+          <Background color="#0f0f1a" gap={24} size={1} />
 
-        {isAnalyzing && (
-          <div className="absolute inset-0 z-50 bg-[#05050a]/80 backdrop-blur-sm flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <div className="absolute inset-0 bg-blue-500/30 blur-2xl animate-pulse" />
-                <div className="w-12 h-12 rounded-xl bg-linear-to-br from-blue-500/20 to-cyan-500/10 border border-blue-400/30 flex items-center justify-center">
-                  <div className="w-5 h-5 rounded-sm bg-blue-400/60 animate-pulse" />
+          {isAnalyzing && (
+            <div className="absolute inset-0 z-50 bg-[#05050a]/80 backdrop-blur-sm flex items-center justify-center">
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-blue-500/30 blur-2xl animate-pulse" />
+                  <div className="w-12 h-12 rounded-xl bg-linear-to-br from-blue-500/20 to-cyan-500/10 border border-blue-400/30 flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-sm bg-blue-400/60 animate-pulse" />
+                  </div>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-xs font-semibold text-white/80">
+                    Analyzing schema...
+                  </span>
+                  <span className="text-[10px] font-medium text-white/40">
+                    AI processing in progress
+                  </span>
                 </div>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-xs font-semibold text-white/80">
-                  Analyzing schema...
-                </span>
-                <span className="text-[10px] font-medium text-white/40">
-                  AI processing in progress
-                </span>
+            </div>
+          )}
+
+          <Controls
+            showInteractive={false}
+            className="bg-[#0a0a0f]/90! border-white/5! backdrop-blur-xl! rounded-xl! p-1! shadow-2xl! gap-1!"
+          />
+
+          <Panel position="top-right" className="flex gap-2 m-4">
+            <div className="flex bg-[#0a0a0f]/90 border border-white/5 backdrop-blur-xl rounded-xl p-1 shadow-xl">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isExporting}
+                className="gap-2 h-8 px-3 text-white/50 hover:text-white hover:bg-white/5 rounded-lg text-xs font-medium transition-all"
+                onClick={() => fitView({ duration: 600, padding: 0.25 })}
+              >
+                <LayoutGrid className="w-4 h-4" />
+                Fit View
+              </Button>
+              <div className="w-px h-5 bg-white/10 my-auto" />
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isExporting}
+                className="gap-2 h-8 px-3 text-white/50 hover:text-white hover:bg-white/5 rounded-lg text-xs font-medium transition-all"
+                onClick={() => onExport("svg")}
+              >
+                SVG
+              </Button>
+              <div className="w-px h-5 bg-white/10 my-auto" />
+              {/* 
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={isExporting}
+              className="gap-2 h-8 px-3 text-white/50 hover:text-white hover:bg-white/5 rounded-lg text-xs font-medium transition-all"
+              onClick={() => onExport("png")}
+            >
+              PNG
+            </Button>
+            <div className="w-px h-5 bg-white/10 my-auto" /> 
+            */}
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isExporting}
+                className="gap-2 h-8 px-2 text-white/50 hover:text-white hover:bg-white/5 rounded-lg text-xs font-medium transition-all"
+                onClick={() => onExport("pdf")}
+                title="Standard PDF"
+              >
+                <Download className="w-4 h-4" />
+                PDF
+              </Button>
+              {/* 
+            <div className="w-px h-5 bg-white/10 my-auto" />
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={isExporting}
+              className="gap-2 h-8 px-3 bg-blue-500/10! text-blue-400 hover:text-white hover:bg-blue-600/20 rounded-lg text-xs font-bold transition-all border border-blue-500/20"
+              onClick={() => onExport("pro-pdf")}
+              title="Documentation Report"
+            >
+              <FileText className="w-4 h-4" />
+              REPORT
+            </Button>
+            */}
+            </div>
+          </Panel>
+        </ReactFlow>
+      </div>
+
+      {isExporting && (
+        <div className="absolute inset-0 z-50 bg-[#05050a]/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-emerald-500/20 blur-2xl animate-pulse" />
+              <div className="w-12 h-12 rounded-xl bg-linear-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-400/20 flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-emerald-400/50 border-t-emerald-400 rounded-full animate-spin" />
               </div>
             </div>
-          </div>
-        )}
-
-        <Controls
-          showInteractive={false}
-          className="bg-[#0a0a0f]/90! border-white/5! backdrop-blur-xl! rounded-xl! p-1! shadow-2xl! gap-1!"
-        />
-
-        <Panel position="top-right" className="flex gap-2 m-4">
-          <div className="flex bg-[#0a0a0f]/90 border border-white/5 backdrop-blur-xl rounded-xl p-1 shadow-xl">
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={isExporting}
-              className="gap-2 h-8 px-3 text-white/50 hover:text-white hover:bg-white/5 rounded-lg text-xs font-medium transition-all"
-              onClick={() => fitView({ duration: 600, padding: 0.25 })}
-            >
-              <LayoutGrid className="w-4 h-4" />
-              Fit View
-            </Button>
-            <div className="w-px h-5 bg-white/10 my-auto" />
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={isExporting}
-              className="gap-2 h-8 px-3 text-white/50 hover:text-white hover:bg-white/5 rounded-lg text-xs font-medium transition-all"
-              onClick={() => onExport("svg")}
-            >
-              {isExporting ? (
-                <div className="w-4 h-4 rounded-sm border-2 border-white/30 border-t-white animate-spin" />
-              ) : (
-                <FileText className="w-4 h-4" />
-              )}
-              SVG
-            </Button>
-            <div className="w-px h-5 bg-white/10 my-auto" />
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={isExporting}
-              className="gap-2 h-8 px-3 text-white/50 hover:text-white hover:bg-white/5 rounded-lg text-xs font-medium transition-all"
-              onClick={() => onExport("pdf")}
-            >
-              {isExporting ? (
-                <div className="w-4 h-4 rounded-sm border-2 border-white/30 border-t-white animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              PDF
-            </Button>
-          </div>
-        </Panel>
-      </ReactFlow>
-    </div>
-
-    {isExporting && (
-      <div className="absolute inset-0 z-50 bg-[#05050a]/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300 pointer-events-none">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="absolute inset-0 bg-emerald-500/20 blur-2xl animate-pulse" />
-            <div className="w-12 h-12 rounded-xl bg-linear-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-400/20 flex items-center justify-center">
-              <div className="w-5 h-5 border-2 border-emerald-400/50 border-t-emerald-400 rounded-full animate-spin" />
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-xs font-semibold text-white/80">
+                Generating Export...
+              </span>
+              <span className="text-[10px] font-medium text-white/40">
+                Optimizing nodes and edges
+              </span>
             </div>
           </div>
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-xs font-semibold text-white/80">
-              Generating Export...
-            </span>
-            <span className="text-[10px] font-medium text-white/40">
-              Optimizing nodes and edges
-            </span>
-          </div>
         </div>
-      </div>
-    )}
-  </div>
-);
+      )}
+    </div>
+  );
 }
 
 export function ERDiagram() {

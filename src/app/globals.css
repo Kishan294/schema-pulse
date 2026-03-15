@@ -196,8 +196,10 @@
 }
 
 /* Export Optimization */
-.exporting .react-flow__background {
-  opacity: 0.2 !important;
+.exporting .react-flow__background,
+.exporting .bg-dot-pattern {
+  display: none !important;
+  background-image: none !important;
 }
 
 .exporting .glass,
@@ -207,14 +209,6 @@
 .exporting [class*="backdrop-blur"] {
   backdrop-filter: none !important;
   filter: none !important;
-  background-color: rgba(10, 10, 10, 0.98) !important;
-}
-
-.exporting * {
-  animation: none !important;
-  transition: none !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
 }
 
 .exporting .react-flow__edge-path {
